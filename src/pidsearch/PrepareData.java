@@ -8,6 +8,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,7 +52,9 @@ public class PrepareData {
         timeTable = loadTimeTable(dataDir+"/"+decttFile,vertices);
         connections = (List<Connection>)timeTable.get(0);
         edges = (List<Edge>) timeTable.get(1);
-        System.out.println("Timetable loaded");
+        System.out.print("Timetable loaded, ");
+        System.out.print(connections.size()+" connections, ");
+        System.out.println(edges.size()+" edges");
     
     }
     /**
@@ -58,18 +63,33 @@ public class PrepareData {
     public static void main(String[] args) {
        
         PrepareData pd = new PrepareData();
-        for (int i=0;i<100;i++){
+        System.out.println(pd.vertices.size()+" vertices, "+pd.edges.size()+" edges");
+       /* for (int i=0;i<100;i++){
             Edge e;
             e = pd.edges.get(i);
-            System.out.println(e.conection.name);
-            System.out.println(e.from.name);
-            System.out.println(e.to.name);
+            System.out.println(pd.connections.get(e.conection).name);
+            System.out.println(pd.vertices.get(e.from).name);
+            System.out.println(pd.vertices.get(e.to).name);
             System.out.println(e.length);
             System.out.println();
+        }*/
+
+        
+        Vertex v = pd.vertices.get(3334);
+        System.out.println(v.name);
+        for (int d:v.departs){
+            Edge e = pd.edges.get(d);
+            int dep = e.departure;
+            int h = dep/60;
+            int m = dep%60;
+            String to = pd.vertices.get(e.to).name;
+            String spoj = pd.connections.get(e.conection).name;
+            System.out.println(h+"."+m+" -> "+spoj+":"+to);
         }
+        
     }
 
-    public static Map<Integer, int[]> loadMap(String mapFile) {
+    public  Map<Integer, int[]> loadMap(String mapFile) {
         Map<Integer,int[]> records;
         records = new HashMap();
 
@@ -99,7 +119,7 @@ public class PrepareData {
         return records;
     }
     
-    public static List<List> loadStations(String stationsFile){
+    public  List<List> loadStations(String stationsFile){
         List stations;
         stations = new LinkedList();
         
@@ -130,9 +150,9 @@ public class PrepareData {
         return stations;
     }
     
-    public static List makeVertices(List<List> stat,Map<Integer,int[]> map){
+    public  List makeVertices(List<List> stat,Map<Integer,int[]> map){
         List<Vertex> stations;
-        stations = new LinkedList();
+        stations = new ArrayList();
         for (List s:(List<List>)stat){
             Vertex v;
             v = new Vertex();
@@ -149,12 +169,12 @@ public class PrepareData {
         return stations;
     }
     
-    public static List loadTimeTable(String ttFile,List<Vertex> vertices)
+    public List loadTimeTable(String ttFile,List<Vertex> vertices)
     {
         List<Edge> edges;
         List<Connection> connections;
-        edges = new LinkedList<Edge>();
-        connections = new LinkedList<Connection>();
+        edges = new ArrayList<Edge>();
+        connections = new ArrayList<Connection>();
         
         BufferedReader reader;
         try {
@@ -167,6 +187,12 @@ public class PrepareData {
         String line;  
         Connection con;
         con = null;
+        
+        int conID;
+        conID=-1;
+        int edgeID;
+        edgeID=-1;
+        
         int memStat;
         int memTime;
         memStat=-1;
@@ -184,6 +210,7 @@ public class PrepareData {
                     lineName = line.split(" ")[1];
                     con = new Connection();
                     connections.add(con);
+                    conID++;
                     con.name = lineName;
                     memStat=-1;
                     memTime=-1;
@@ -201,18 +228,19 @@ public class PrepareData {
                     if ((memStat!=-1)&&(memTime!=-1)){
                         Edge e;
                         e = new Edge();
-                        e.conection = con;
+                        e.conection = conID;
                         e.departure = memTime;
                         e.length = time-memTime;
-                        e.from = vertices.get(memStat);
-                        e.to = vertices.get(stat);
-                        memTime = time;
-                        memStat = stat;
+                        e.from = memStat;
+                        e.to = stat;
                         edges.add(e);
-                    } else {
-                        memStat = stat;
-                        memTime = time;
-                    }
+                        edgeID++;
+                        vertices.get(memStat).departs.add(edgeID);
+
+                    } 
+                    memStat = stat;
+                    memTime = time;
+
                     
                     
                 }
@@ -222,11 +250,35 @@ public class PrepareData {
             System.err.println("Error while reading timetable file");
         }
         
+        DepartComparator depComp;
+        depComp = new DepartComparator(edges);
+        
+        for (Vertex v: vertices){
+            Collections.sort(v.departs,depComp);
+        }
         
         List timeTable;
         timeTable = new LinkedList();
         timeTable.add(connections);
         timeTable.add(edges);
         return timeTable;
+    }
+    
+    class DepartComparator implements Comparator<Integer>{
+        List<Edge> edges;
+
+        public DepartComparator(List<Edge> e) {
+            edges = e;
+        }
+        
+        
+        @Override
+        public int compare(Integer t, Integer t1) {
+            Edge e1,e2;
+            e1 = edges.get(t);
+            e2 = edges.get(t1);
+            return e1.departure - e2.departure;
+        }
+    
     }
 }

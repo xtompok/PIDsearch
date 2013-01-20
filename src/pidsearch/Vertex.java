@@ -4,16 +4,24 @@
  */
 package pidsearch;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  *
  * @author jethro
  */
 public class Vertex {
     public String name;
-    public Edge departs[];
-    public WalkEdge walks[];
+    public List<Integer> departs;
+    public List<Integer> walks;
     public String attrib[];
     public int xCoord;
     public int yCoord;
     
+    public Vertex(){
+        departs = new ArrayList<Integer>(); 
+        walks = new LinkedList<Integer>();
+    }
 }

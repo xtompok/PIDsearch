@@ -4,6 +4,8 @@
  */
 package pidsearch;
 
+import java.util.Date;
+
 /**
  *
  * @author jethro
@@ -18,7 +20,7 @@ public class Connection {
     public String company;
     public String attrib[];
     
-    public boolean goesAt(int timestamp)
+    public boolean goesAt(Date when)
     {
         return true;
     }
