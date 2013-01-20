@@ -18,4 +18,11 @@ public class Connection {
     public String company;
     public String attrib[];
     
+    public boolean goesAt(int timestamp)
+    {
+        return true;
+    }
+    
 }
+
+

@@ -13,5 +13,7 @@ public class Vertex {
     public Edge departs[];
     public WalkEdge walks[];
     public String attrib[];
+    public int xCoord;
+    public int yCoord;
     
 }
