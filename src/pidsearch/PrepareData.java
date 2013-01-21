@@ -30,11 +30,12 @@ public class PrepareData {
     static String mapfile = "map.dat";
     static String decttFile = "pid.out";
     
-        Map map;
-        List stat;
-        List<Vertex> vertices;
-        List<Connection> connections;
-        List<Edge> edges;
+    Map map;
+    List stat;
+    List<Vertex> vertices;
+    List<Connection> connections;
+    List<ConEdge> edges;
+    List<WalkEdge> walks;
 
     
     public PrepareData(){
@@ -48,10 +49,13 @@ public class PrepareData {
         vertices = makeVertices(stat, map);
         System.out.println("Vertices made");
         
+        walks = makeAutoWalks(vertices);
+        System.out.println("Walks made");
+        
         List timeTable;
         timeTable = loadTimeTable(dataDir+"/"+decttFile,vertices);
         connections = (List<Connection>)timeTable.get(0);
-        edges = (List<Edge>) timeTable.get(1);
+        edges = (List<ConEdge>) timeTable.get(1);
         System.out.print("Timetable loaded, ");
         System.out.print(connections.size()+" connections, ");
         System.out.println(edges.size()+" edges");
@@ -78,13 +82,21 @@ public class PrepareData {
         Vertex v = pd.vertices.get(3334);
         System.out.println(v.name);
         for (int d:v.departs){
-            Edge e = pd.edges.get(d);
+            ConEdge e = pd.edges.get(d);
             int dep = e.departure;
             int h = dep/60;
             int m = dep%60;
             String to = pd.vertices.get(e.to).name;
             String spoj = pd.connections.get(e.conection).name;
             System.out.println(h+"."+m+" -> "+spoj+":"+to);
+        }
+        
+        for (WalkEdge w: pd.walks){
+            System.out.print(pd.vertices.get(w.from).name);
+            System.out.print("->");
+            System.out.print(pd.vertices.get(w.from).name);
+            System.out.println(" "+w.length);
+
         }
         
     }
@@ -169,11 +181,56 @@ public class PrepareData {
         return stations;
     }
     
+    public List<WalkEdge> makeAutoWalks(List<Vertex> vertices){
+        
+        List<WalkEdge> walks;
+        walks = new ArrayList<WalkEdge>();
+        
+        Map<String,List<Vertex>> sameName;
+        sameName = new HashMap<String, List<Vertex>>();
+        
+        for (Vertex v:vertices){
+            if (sameName.containsKey(v.name)){
+                sameName.get(v.name).add(v);
+            } else
+            {
+                List<Vertex> l;
+                l = new LinkedList<Vertex>();
+                l.add(v);
+                sameName.put(v.name,l );
+            }
+        }
+        
+        for (List<Vertex> list: sameName.values()){
+            for (Vertex v1: list){
+                for (Vertex v2: list){
+                    if (v1==v2) continue;
+                    int dist = distance(v1, v2);
+                    WalkEdge e;
+                    e = new WalkEdge();
+                    e.from = vertices.indexOf(v1);
+                    e.to = vertices.indexOf(v2);
+                    e.length = dist/60;
+                    walks.add(e);
+                    v1.walks.add(walks.size()-1);
+                    v2.walks.add(walks.size()-1);
+                }
+            }
+        }
+        
+        return walks;
+    }
+    
+    public int distance(Vertex v1, Vertex v2){
+        return (int)(Math.sqrt((v2.xCoord-v1.xCoord)*(v2.xCoord-v1.xCoord)+
+                (v2.yCoord-v1.yCoord)*(v2.yCoord-v1.yCoord)));
+    }
+    
     public List loadTimeTable(String ttFile,List<Vertex> vertices)
     {
-        List<Edge> edges;
+        List<ConEdge> edges;
         List<Connection> connections;
-        edges = new ArrayList<Edge>();
+        edges = new ArrayList<ConEdge>();
         connections = new ArrayList<Connection>();
         
         BufferedReader reader;
@@ -226,8 +283,8 @@ public class PrepareData {
                     int time = Integer.parseInt(cols[1]);
                     int stat = Integer.parseInt(cols[3]);
                     if ((memStat!=-1)&&(memTime!=-1)){
-                        Edge e;
-                        e = new Edge();
+                        ConEdge e;
+                        e = new ConEdge();
                         e.conection = conID;
                         e.departure = memTime;
                         e.length = time-memTime;
@@ -264,21 +321,4 @@ public class PrepareData {
         return timeTable;
     }
     
-    class DepartComparator implements Comparator<Integer>{
-        List<Edge> edges;
-
-        public DepartComparator(List<Edge> e) {
-            edges = e;
-        }
-        
-        
-        @Override
-        public int compare(Integer t, Integer t1) {
-            Edge e1,e2;
-            e1 = edges.get(t);
-            e2 = edges.get(t1);
-            return e1.departure - e2.departure;
-        }
-    
-    }
 }
