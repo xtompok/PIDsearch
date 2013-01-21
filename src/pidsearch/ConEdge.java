@@ -8,7 +8,7 @@ package pidsearch;
  *
  * @author jethro
  */
-public class Edge {
+public class ConEdge {
     public int from;
     public int to;
     public int length;
