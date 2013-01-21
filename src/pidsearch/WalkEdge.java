@@ -9,8 +9,8 @@ package pidsearch;
  * @author jethro
  */
 public class WalkEdge {
-    public Vertex from;
-    public Vertex to;
+    public int from;
+    public int to;
     public int length;
     
 }
