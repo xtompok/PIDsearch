@@ -9,10 +9,5 @@ package pidsearch;
  * @author jethro
  */
 public class Edge {
-    public int from;
-    public int to;
-    public int length;
-    public int departure;
-    public int conection;
     
 }
