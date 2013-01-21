@@ -273,7 +273,7 @@ public class PrepareData {
                 }
                 if (line.charAt(0) == 'D')
                 {
-                    con.validityString = line.substring(2);
+                    con.makeValidityBitmap(line.substring(2));
                 }
                 if (line.charAt(0) == '\t')
                 {
