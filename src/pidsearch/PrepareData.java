@@ -81,20 +81,19 @@ public class PrepareData {
         
         Vertex v = pd.vertices.get(3334);
         System.out.println(v.name);
-        for (int d:v.departs){
-            ConEdge e = pd.edges.get(d);
+        for (ConEdge e:v.departs){
             int dep = e.departure;
             int h = dep/60;
             int m = dep%60;
-            String to = pd.vertices.get(e.to).name;
-            String spoj = pd.connections.get(e.conection).name;
+            String to = e.to.name;
+            String spoj = e.conection.name;
             System.out.println(h+"."+m+" -> "+spoj+":"+to);
         }
         
         for (WalkEdge w: pd.walks){
-            System.out.print(pd.vertices.get(w.from).name);
+            System.out.print(w.from.name);
             System.out.print("->");
-            System.out.print(pd.vertices.get(w.from).name);
+            System.out.print(w.to.name);
             System.out.println(" "+w.length);
 
         }
@@ -208,12 +207,12 @@ public class PrepareData {
                     int dist = distance(v1, v2);
                     WalkEdge e;
                     e = new WalkEdge();
-                    e.from = vertices.indexOf(v1);
-                    e.to = vertices.indexOf(v2);
+                    e.from = v1;
+                    e.to = v2;
                     e.length = dist/60;
                     walks.add(e);
-                    v1.walks.add(walks.size()-1);
-                    v2.walks.add(walks.size()-1);
+                    v1.walks.add(e);
+                    v2.walks.add(e);
                 }
             }
         }
@@ -285,14 +284,14 @@ public class PrepareData {
                     if ((memStat!=-1)&&(memTime!=-1)){
                         ConEdge e;
                         e = new ConEdge();
-                        e.conection = conID;
+                        e.conection = con;
                         e.departure = memTime;
                         e.length = time-memTime;
-                        e.from = memStat;
-                        e.to = stat;
+                        e.from=vertices.get(memStat);
+                        e.to = vertices.get(stat);
                         edges.add(e);
                         edgeID++;
-                        vertices.get(memStat).departs.add(edgeID);
+                        vertices.get(memStat).departs.add(e);
 
                     } 
                     memStat = stat;
@@ -308,7 +307,7 @@ public class PrepareData {
         }
         
         DepartComparator depComp;
-        depComp = new DepartComparator(edges);
+        depComp = new DepartComparator();
         
         for (Vertex v: vertices){
             Collections.sort(v.departs,depComp);

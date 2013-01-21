@@ -8,11 +8,13 @@ package pidsearch;
  *
  * @author jethro
  */
-public class ConEdge {
-    public int from;
-    public int to;
-    public int length;
+public class ConEdge extends Edge {
+
     public int departure;
-    public int conection;
+    public Connection conection;
+    
+    public ConEdge(){
+        this.type = TransportType.BUS;
+    }
     
 }

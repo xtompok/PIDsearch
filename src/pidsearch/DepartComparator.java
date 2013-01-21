@@ -11,19 +11,11 @@ import java.util.List;
  *
  * @author jethro
  */
-public class DepartComparator implements Comparator<Integer>{
-        List<ConEdge> edges;
+public class DepartComparator implements Comparator<ConEdge>{
 
-        public DepartComparator(List<ConEdge> e) {
-            edges = e;
-        }
-        
-        
+             
         @Override
-        public int compare(Integer t, Integer t1) {
-            ConEdge e1,e2;
-            e1 = edges.get(t);
-            e2 = edges.get(t1);
+        public int compare(ConEdge e1, ConEdge e2) {
             return e1.departure - e2.departure;
         }
     

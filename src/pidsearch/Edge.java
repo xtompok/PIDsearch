@@ -9,5 +9,9 @@ package pidsearch;
  * @author jethro
  */
 public class Edge {
+    public Vertex from;
+    public Vertex to;
+    public int length;
+    public TransportType type;
     
 }

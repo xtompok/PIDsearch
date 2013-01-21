@@ -8,9 +8,9 @@ package pidsearch;
  *
  * @author jethro
  */
-public class WalkEdge {
-    public int from;
-    public int to;
-    public int length;
+public class WalkEdge extends Edge {
+    public WalkEdge(){
+        this.type = TransportType.WALK;
+    }
     
 }

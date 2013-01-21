@@ -14,14 +14,14 @@ import java.util.List;
  */
 public class Vertex {
     public String name;
-    public List<Integer> departs;
-    public List<Integer> walks;
+    public List<ConEdge> departs;
+    public List<WalkEdge> walks;
     public String attrib[];
     public int xCoord;
     public int yCoord;
     
     public Vertex(){
-        departs = new ArrayList<Integer>(); 
-        walks = new LinkedList<Integer>();
+        departs = new ArrayList<ConEdge>(); 
+        walks = new LinkedList<WalkEdge>();
     }
 }
