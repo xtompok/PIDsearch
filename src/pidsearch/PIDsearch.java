@@ -98,14 +98,20 @@ public class PIDsearch {
             System.out.println(" do "+a.path.get(a.path.size()-1).to.name);
             for (Edge e: a.path){
                 if (e instanceof ConEdge){
-                    ConEdge ce;
-                    ce = (ConEdge) e;
-                    System.out.println(ce.from.name+"("+strTime(ce.departure)+") -> ");
-                    System.out.println(ce.to.name+"("+strTime(ce.departure+ce.length)+")");
-                }
+                    printConEdge((ConEdge)e);
+               }
             }
             System.out.println();
         }
+    }
+    
+    public void printConEdge(ConEdge e){
+        System.out.print(e.from.name+"("+strTime(e.departure)+") -> ");
+        System.out.println(e.to.name+"("+strTime(e.departure+e.length)+")");
+    }
+    
+    public void printWalkEdge(WalkEdge e){
+        System.out.println(e.from.name+" -> "+e.to.name+"("+e.length+")");
     }
     
     public String strTime(int time){
@@ -145,19 +151,23 @@ public class PIDsearch {
     
     public List<Arrival> searchConnection(Vertex from,Vertex to,Calendar when){
         System.out.println("Searching connection from "+from.name+" to "+to.name);
-        int minute = when.get(Calendar.HOUR_OF_DAY)*60+when.get(Calendar.MINUTE);
         List<Arrival> stubs;
         stubs = new ArrayList<Arrival>();
+        int minute = when.get(Calendar.HOUR_OF_DAY)*60+when.get(Calendar.MINUTE);
+
+        
+        int wait = 10;
         
         List<ConEdge> departs;
-        departs = findDepartures(from, minute, 30);
+        departs = findDepartures(from,minute, when, wait);
         
         for (ConEdge e: departs){
             stubs.add(new Arrival(e));
         }
         
         for (WalkEdge v: from.walks){
-            for (ConEdge e: findDepartures(v.to, minute, 30)){
+            departs = findDepartures(v.to, minute,when, wait);
+            for (ConEdge e: departs){
                 stubs.add(new Arrival(e));
             }
         }
@@ -168,23 +178,36 @@ public class PIDsearch {
         Edge lastEdge;
         
         while (toFound(stubs, to).isEmpty()){
+         //   System.out.println("# of stubs:"+stubs.size());
             Collections.sort(stubs,ac);
-            first = stubs.get(0);
+            first = stubs.remove(0);
             lastEdge = first.path.get(first.path.size()-1);
-            
-            departs = findDepartures(lastEdge.to, minute, 30);
+            /*System.out.println("Arrival:"+first.arrival);
+            if (lastEdge instanceof ConEdge)
+                printConEdge((ConEdge)lastEdge);
+            else 
+                printWalkEdge((WalkEdge)lastEdge);*/
+                
+            departs = findDepartures(lastEdge.to,first.arrival,when, wait);
 
             for (ConEdge e : departs) {
-                if (!e.to.equals(lastEdge.from))
+                boolean cycle=false;
+                for (Edge pe :first.path){
+                    if (e.to.equals(pe.from)){
+                        cycle=true;
+                        break;
+                    }          
+                }
+                if (!cycle)
                     stubs.add(new Arrival(first,e));
+
             }
 
             for (WalkEdge v : lastEdge.to.walks) {
-                for (ConEdge e : findDepartures(v.to, minute, 30)) {
-                    if ((!e.to.name.equals(lastEdge.to.name)) &&
-                            (!e.to.equals(lastEdge.from)))
-                        stubs.add(new Arrival(first,e));
-                }
+                    if ((!v.to.name.equals(lastEdge.from.name)) &&
+                            (!v.to.equals(lastEdge.from)))
+                        stubs.add(new Arrival(first,v));
+                     
             }
 
         }
@@ -193,9 +216,10 @@ public class PIDsearch {
         return toFound(stubs, to);
     }
     
-    public List<ConEdge> findDepartures(Vertex from, int when, int range){
+    public List<ConEdge> findDepartures(Vertex from,int minute, Calendar date, int range){
         List<ConEdge> departs;
         departs = from.departs;
+
         
         ConEdge whenEdge;
         whenEdge = new ConEdge();
@@ -204,19 +228,21 @@ public class PIDsearch {
         dc = new DepartComparator();
         
         int minIndex;
-        whenEdge.departure = when;
+        whenEdge.departure = minute;
         minIndex = Collections.binarySearch(departs,whenEdge,dc);
         minIndex = (minIndex<0)?-(minIndex+1):minIndex;
         
         int maxIndex;
-        whenEdge.departure = when+range;
+        whenEdge.departure = minute+range;
         maxIndex = Collections.binarySearch(departs, whenEdge, dc);
         maxIndex = (maxIndex<0)?-(maxIndex+1):maxIndex;
         
         List<ConEdge> departEdges;
         departEdges = new LinkedList<ConEdge>();
+        if (minIndex>maxIndex) return departEdges;
         for (ConEdge e:departs.subList(minIndex, maxIndex)){
-            departEdges.add(e);
+            if (e.conection.goesAt(date))
+                departEdges.add(e);
         }
         return departEdges;
     }
