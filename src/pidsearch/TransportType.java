@@ -4,11 +4,13 @@
  */
 package pidsearch;
 
+import java.io.Serializable;
+
 /**
  *
  * @author jethro
  */
-public enum TransportType {
+public enum TransportType implements Serializable{
     TRAM,BUS,METRO,BOAT,WALK,TRAIN;
     
 }

@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,15 +16,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sound.sampled.LineUnavailableException;
 
 /**
  *
  * @author jethro
  */
-public class PrepareData {
+public class PrepareData implements Serializable{
 
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
@@ -86,7 +84,7 @@ public class PrepareData {
             int h = dep/60;
             int m = dep%60;
             String to = e.to.name;
-            String spoj = e.conection.name;
+            String spoj = e.connection.name;
             System.out.println(h+"."+m+" -> "+spoj+":"+to);
         }
         
@@ -279,12 +277,12 @@ public class PrepareData {
                 {
                     String [] cols;
                     cols = line.split("\t");
-                    int time = Integer.parseInt(cols[1]);
+                    int time = (Integer.parseInt(cols[1]))%(24*60);
                     int stat = Integer.parseInt(cols[3]);
                     if ((memStat!=-1)&&(memTime!=-1)){
                         ConEdge e;
                         e = new ConEdge();
-                        e.conection = con;
+                        e.connection = con;
                         e.departure = memTime;
                         e.length = time-memTime;
                         e.from=vertices.get(memStat);

@@ -4,6 +4,7 @@
  */
 package pidsearch;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author jethro
  */
-public class Vertex {
+public class Vertex implements Serializable{
     public String name;
     public List<ConEdge> departs;
     public List<WalkEdge> walks;

@@ -4,11 +4,13 @@
  */
 package pidsearch;
 
+import java.io.Serializable;
+
 /**
  *
  * @author jethro
  */
-public class WalkEdge extends Edge {
+public class WalkEdge extends Edge implements Serializable {
     public WalkEdge(){
         this.type = TransportType.WALK;
     }

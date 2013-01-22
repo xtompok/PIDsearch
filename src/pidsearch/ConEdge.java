@@ -4,14 +4,16 @@
  */
 package pidsearch;
 
+import java.io.Serializable;
+
 /**
  *
  * @author jethro
  */
-public class ConEdge extends Edge {
+public class ConEdge extends Edge implements Serializable{
 
     public int departure;
-    public Connection conection;
+    public Connection connection;
     
     public ConEdge(){
         this.type = TransportType.BUS;

@@ -4,6 +4,7 @@
  */
 package pidsearch;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -11,7 +12,7 @@ import java.util.Date;
  *
  * @author jethro
  */
-public class Connection {
+public class Connection implements Serializable{
     public TransportType type;
     public String name;
   
