@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -38,7 +39,6 @@ public class PIDsearch {
     List<Connection> connections;
     List<ConEdge> edges;
     List<WalkEdge> walks;
-    HashMap<Vertex, Boolean> usedVertex;
     static String dataFile = "PrepareData.obj";
 
     public PIDsearch() {
@@ -85,10 +85,6 @@ public class PIDsearch {
             vertexForName.put(v.name, v);
         }
 
-        usedVertex = new HashMap<Vertex, Boolean>();
-        for (Vertex v : vertices) {
-            usedVertex.put(v, Boolean.FALSE);
-        }
     }
 
     /**
@@ -103,7 +99,7 @@ public class PIDsearch {
 
     public Vertex getStation(String type) {
         BufferedReader in;
-        in = new BufferedReader(new InputStreamReader(System.in));
+        in = new BufferedReader(new InputStreamReader(System.in,Charset.forName("utf-8")));
 
         String st;
         st = null;
@@ -111,6 +107,7 @@ public class PIDsearch {
             System.out.print("Zadejte jmeno " + type + " stanice:");
             try {
                 st = in.readLine();
+                System.out.println(st);
             } catch (IOException ex) {
                 System.err.println("Failed to read a station name");
                 System.exit(1);
@@ -167,7 +164,7 @@ public class PIDsearch {
             if (e instanceof WalkEdge) {
                 if (ce != null) {
                     list.add(ce);
-                    ce = null;
+                     ce = null;
                 }
                 if (we == null) {
                     we = new WalkEdge();
@@ -198,9 +195,10 @@ public class PIDsearch {
                 }
 
                 ce.to = ((ConEdge) e).to;
+                ce.length += e.length;
             }
         }
-        if (we != null) {
+        if ((we != null)&&(!we.from.name.equals(we.to.name))) {
             list.add(we);
         }
         if (ce != null) {
@@ -222,24 +220,23 @@ public class PIDsearch {
         return (time / 60) + "." + (time % 60);
     }
 
-    class ArrivalComparator implements Comparator<Arrival> {
-
-        @Override
-        public int compare(Arrival a1, Arrival a2) {
-            return a1.arrival - a2.arrival;
-        }
-    }
 
     public List<Arrival> searchConnection(Vertex from, Vertex to, Calendar when) {
         System.out.println("Searching connection from " + from.name + " to " + to.name);
 
+        HashMap<Vertex, Boolean> usedVertex;
+
+        usedVertex = new HashMap<Vertex, Boolean>();
+        for (Vertex v : vertices) {
+            usedVertex.put(v, Boolean.FALSE);
+        }
+        
         ArrivalComparator ac;
         ac = new ArrivalComparator();
 
         PriorityQueue<Arrival> stubs;
         stubs = new PriorityQueue<Arrival>(100, ac);
         int minute = when.get(Calendar.HOUR_OF_DAY) * 60 + when.get(Calendar.MINUTE);
-
 
         int wait = 100;
 
