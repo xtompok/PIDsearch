@@ -4,6 +4,8 @@
  */
 package pidsearch;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.Console;
 import java.io.FileInputStream;
@@ -47,28 +49,40 @@ public class PIDsearch {
         pd = null;
         boolean save;
         save = false;
-        /*
+        long start;
+        long end;
          try {
-         ObjectInputStream in = new ObjectInputStream(new FileInputStream(dataFile));
+         ObjectInputStream in = new ObjectInputStream(
+                 new BufferedInputStream(
+                    new FileInputStream(dataFile)));
          System.out.println("Reading data from file");
+         start = System.nanoTime();
          pd = (PrepareData) in.readObject();
          in.close();
-         } catch (IOException e) {*/
-        System.out.println("Reading failed, generating");
-        pd = new PrepareData();
-        /*  save = true;
+         end = System.nanoTime();
+         System.err.println("Loading took "+(end-start)/1000000000+" seconds.");
+         } catch (IOException e) {
+            System.out.println("Reading failed, generating");
+            start = System.nanoTime();
+            pd = new PrepareData();
+            end = System.nanoTime();
+            System.err.println("Generating took "+(end-start)/1000000000+" seconds.");
+            save = true;
          } catch (ClassNotFoundException e) {
-         System.err.println("Class for data not found");
+            System.err.println("Class for data not found");
          }
-         */
-        save = false;
         if (save) {
             System.out.println("Saving data to file " + dataFile);
             try {
-                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(dataFile));
+                ObjectOutputStream out = new ObjectOutputStream(
+                        new BufferedOutputStream(
+                            new FileOutputStream(dataFile)));
                 System.out.println("Stream opened");
+                start = System.nanoTime();
                 out.writeObject(pd);
                 out.close();
+                end = System.nanoTime();
+                System.err.println("Saving took "+((end-start)/1000000000)+" seconds.");
                 System.out.println("Data saved");
             } catch (IOException e) {
                 System.err.println("Error while saving data");
@@ -107,7 +121,6 @@ public class PIDsearch {
             System.out.print("Zadejte jmeno " + type + " stanice:");
             try {
                 st = in.readLine();
-                System.out.println(st);
             } catch (IOException ex) {
                 System.err.println("Failed to read a station name");
                 System.exit(1);
@@ -186,7 +199,6 @@ public class PIDsearch {
                 }
 
                 if (!ce.connection.equals(((ConEdge) e).connection)) {
-                    ce.length = ((ConEdge) e).departure - ce.departure + e.length;
                     list.add(ce);
                     ce = new ConEdge();
                     ce.departure = ((ConEdge) e).departure;
