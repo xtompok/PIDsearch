@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,10 +29,10 @@ public class PrepareData implements Serializable{
     
     Map map;
     List stat;
-    List<Vertex> vertices;
-    List<Connection> connections;
-    List<ConEdge> edges;
-    List<WalkEdge> walks;
+    public List<Vertex> vertices;
+    public List<Connection> connections;
+    public List<ConEdge> edges;
+    public List<WalkEdge> walks;
 
     
     public PrepareData(){
