@@ -10,9 +10,18 @@ import java.io.Serializable;
  *
  * @author jethro
  */
-public class WalkEdge extends Edge implements Serializable {
+public class WalkEdge extends Edge{
     public WalkEdge(){
-        this.type = TransportType.WALK;
+        type = TransportType.WALK;
+    }
+    
+    public WalkEdge(WalkEdge.Serial e){}
+    
+    static class Serial extends Edge.Serial implements Serializable {
+        public Serial(){
+            type = TransportType.WALK;
+        }
+        public Serial(WalkEdge e){}
     }
     
 }

@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author jethro
  */
-public class Vertex implements Serializable{
+public class Vertex{
     public String name;
     public List<ConEdge> departs;
     public List<WalkEdge> walks;
@@ -24,5 +24,31 @@ public class Vertex implements Serializable{
     public Vertex(){
         departs = new ArrayList<ConEdge>(); 
         walks = new LinkedList<WalkEdge>();
+    }
+    
+    public Vertex(Vertex.Serial v){
+            name = v.name;
+            attrib = v.attrib;
+            xCoord = v.xCoord;
+            yCoord = v.yCoord;  
+    }
+    
+     static class Serial implements Serializable{
+    
+        public String name;
+        public int [] departsIdxs;
+        public int [] walksIdxs;
+        public String attrib[];
+        public int xCoord;
+        public int yCoord;
+        
+        public Serial(){}
+        
+        public Serial(Vertex v){
+            name = v.name;
+            attrib = v.attrib;
+            xCoord = v.xCoord;
+            yCoord = v.yCoord;
+        }
     }
 }

@@ -7,28 +7,20 @@ package pidsearch;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import sun.misc.Compare;
 
 /**
  *
@@ -65,6 +57,7 @@ public class PIDsearch {
             System.out.println("Reading failed, generating");
             start = System.nanoTime();
             pd = new PrepareData();
+            pd.makeData();
             end = System.nanoTime();
             System.err.println("Generating took "+(end-start)/1000000000+" seconds.");
             save = true;
@@ -85,6 +78,7 @@ public class PIDsearch {
                 System.err.println("Saving took "+((end-start)/1000000000)+" seconds.");
                 System.out.println("Data saved");
             } catch (IOException e) {
+                System.err.println(e);
                 System.err.println("Error while saving data");
             }
         }
