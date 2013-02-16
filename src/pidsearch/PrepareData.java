@@ -26,42 +26,56 @@ import pidsearch.Vertex.Serial;
  */
 public class PrepareData implements Externalizable {
 
-    public static final long serialVersionUID = 2;
+    public static final long serialVersionUID = 3;
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
     static String mapfile = "map.dat";
     static String decttFile = "pid.out";
-    private Map map;
-    private List stat;
-    public List<Vertex> vertices;
-    public List<Connection> connections;
-    public List<ConEdge> edges;
-    public List<WalkEdge> walks;
+    public Vertex[] vertices;
+    public Connection[] connections;
+    public ConEdge[] edges;
+    public WalkEdge[] walks;
 
     public PrepareData() {
     }
 
     public void makeData() {
 
+        Map map;
+        List stat;
+        List<Vertex> verticesList;
+        List<Connection> connectionsList;
+        List<ConEdge> edgesList;
+        List<WalkEdge> walksList;
         map = loadMap(dataDir + "/" + mapfile);
         System.out.println("Map loaded");
 
         stat = loadStations(dataDir + "/" + stationsFile);
         System.out.println("Stations loaded");
 
-        vertices = makeVertices(stat, map);
+        verticesList = makeVertices(stat, map);
         System.out.println("Vertices made");
 
-        walks = makeAutoWalks(vertices);
+        walksList = makeAutoWalks(verticesList);
         System.out.println("Walks made");
 
         List timeTable;
-        timeTable = loadTimeTable(dataDir + "/" + decttFile, vertices);
-        connections = (List<Connection>) timeTable.get(0);
-        edges = (List<ConEdge>) timeTable.get(1);
+        timeTable = loadTimeTable(dataDir + "/" + decttFile, verticesList);
+        connectionsList = (List<Connection>) timeTable.get(0);
+        edgesList = (List<ConEdge>) timeTable.get(1);
+
         System.out.print("Timetable loaded, ");
-        System.out.print(connections.size() + " connections, ");
-        System.out.println(edges.size() + " edges");
+        System.out.print(connectionsList.size() + " connections, ");
+        System.out.println(edgesList.size() + " edges");
+        
+        vertices = new Vertex[verticesList.size()];
+        vertices = verticesList.toArray(vertices);
+        connections = new Connection[connectionsList.size()];
+        connections = connectionsList.toArray(connections);
+        edges = new ConEdge[edgesList.size()];
+        edges = edgesList.toArray(edges);
+        walks = new WalkEdge[walksList.size()];
+        walks = walksList.toArray(walks);
 
     }
 
@@ -71,7 +85,7 @@ public class PrepareData implements Externalizable {
     public static void main(String[] args) {
 
         PrepareData pd = new PrepareData();
-        System.out.println(pd.vertices.size() + " vertices, " + pd.edges.size() + " edges");
+       // System.out.println(pd.verticesList.size() + " vertices, " + pd.edgesList.size() + " edges");
         /* for (int i=0;i<100;i++){
          Edge e;
          e = pd.edges.get(i);
@@ -83,7 +97,7 @@ public class PrepareData implements Externalizable {
          }*/
 
 
-        Vertex v = pd.vertices.get(3334);
+        Vertex v = pd.vertices[3334];
         System.out.println(v.name);
         for (ConEdge e : v.departs) {
             int dep = e.departure;
@@ -335,36 +349,41 @@ public class PrepareData implements Externalizable {
         WalkEdge.Serial walkEdgeArray[];
 
 
-        vertexArray = new Vertex.Serial[vertices.size()];
-        conArray = new Connection[connections.size()];
-        conEdgeArray = new ConEdge.Serial[edges.size()];
-        walkEdgeArray = new WalkEdge.Serial[walks.size()];
+        vertexArray = new Vertex.Serial[vertices.length];
+        conArray = new Connection[connections.length];
+        conEdgeArray = new ConEdge.Serial[edges.length];
+        walkEdgeArray = new WalkEdge.Serial[walks.length];
 
-        conArray = connections.toArray(conArray);
+        conArray = connections;
 
         Map<ConEdge, Integer> edgeIndexMap;
-        edgeIndexMap = new HashMap<ConEdge, Integer>(connections.size());
-        for (int i = 0; i < edges.size(); i++) {
-            edgeIndexMap.put(edges.get(i), i);
+        edgeIndexMap = new HashMap<ConEdge, Integer>(connections.length);
+        for (int i = 0; i < edges.length; i++) {
+            edgeIndexMap.put(edges[i], i);
         }
 
         Map<Vertex, Integer> verticesIndexMap;
-        verticesIndexMap = new HashMap<Vertex, Integer>(vertices.size());
-        for (int i = 0; i < vertices.size(); i++) {
-            verticesIndexMap.put(vertices.get(i), i);
+        verticesIndexMap = new HashMap<Vertex, Integer>(vertices.length);
+        for (int i = 0; i < vertices.length; i++) {
+            verticesIndexMap.put(vertices[i], i);
         }
 
         Map<Connection, Integer> conIndexMap;
-        conIndexMap = new HashMap<Connection, Integer>(connections.size());
-        for (int i = 0; i < connections.size(); i++) {
-            conIndexMap.put(connections.get(i), i);
+        conIndexMap = new HashMap<Connection, Integer>(connections.length);
+        for (int i = 0; i < connections.length; i++) {
+            conIndexMap.put(connections[i], i);
+        }
+        
+        Map<WalkEdge,Integer> walksIndexMap;
+        walksIndexMap = new HashMap<WalkEdge, Integer>(walks.length);
+        for (int i = 0; i < walks.length; i++) {
+            walksIndexMap.put(walks[i], i);
         }
 
-
         System.err.println("Preparing vertices");
-        for (int i = 0; i < vertices.size(); i++) {
+        for (int i = 0; i < vertices.length; i++) {
             Vertex v;
-            v = vertices.get(i);
+            v = vertices[i];
             Vertex.Serial ser;
             ser = new Vertex.Serial(v);
             ser.departsIdxs = new int[v.departs.size()];
@@ -373,16 +392,16 @@ public class PrepareData implements Externalizable {
                 ser.departsIdxs[j] = edgeIndexMap.get(v.departs.get(j));
             }
             for (int j = 0; j < v.walks.size(); j++) {
-                ser.walksIdxs[j] = walks.indexOf(v.walks.get(j));
+                ser.walksIdxs[j] = walksIndexMap.get(v.walks.get(j));
             }
             vertexArray[i] = ser;
         }
 
         System.err.println("Preparing walks");
 
-        for (int i = 0; i < walks.size(); i++) {
+        for (int i = 0; i < walks.length; i++) {
             WalkEdge e;
-            e = walks.get(i);
+            e = walks[i];
             WalkEdge.Serial ser;
             ser = new WalkEdge.Serial(e);
             ser.fromIndex = verticesIndexMap.get(e.from);
@@ -392,9 +411,9 @@ public class PrepareData implements Externalizable {
 
         System.err.println("Preparing connection edges");
 
-        for (int i = 0; i < edges.size(); i++) {
+        for (int i = 0; i < edges.length; i++) {
             ConEdge e;
-            e = edges.get(i);
+            e = edges[i];
             ConEdge.Serial ser;
             ser = new ConEdge.Serial(e);
             ser.conIndex = conIndexMap.get(e.connection);
@@ -433,49 +452,49 @@ public class PrepareData implements Externalizable {
         System.out.println("Reading walks");
         walkEdgeArray = (WalkEdge.Serial[]) oi.readObject();
 
-        vertices = new ArrayList<Vertex>(vertexArray.length);
-        connections = Arrays.asList(conArray);
-        edges = new ArrayList<ConEdge>(conEdgeArray.length);
-        walks = new ArrayList<WalkEdge>(walkEdgeArray.length);
+        vertices = new Vertex[vertexArray.length];
+        connections = conArray;
+        edges= new ConEdge[conEdgeArray.length];
+        walks = new WalkEdge[walkEdgeArray.length];
 
-        for (Vertex.Serial s : vertexArray) {
-            vertices.add(new Vertex(s));
+        for (int i=0;i<vertexArray.length;i++){
+            vertices[i] = new Vertex(vertexArray[i]);
         }
-        for (ConEdge.Serial s : conEdgeArray) {
-            edges.add(new ConEdge(s));
+        
+        for (int i=0;i<conEdgeArray.length;i++){
+            edges[i] = new ConEdge(conEdgeArray[i]);
         }
-        for (WalkEdge.Serial s : walkEdgeArray) {
-            walks.add(new WalkEdge(s));
+        for (int i=0;i<walkEdgeArray.length;i++){
+            walks[i] = new WalkEdge(walkEdgeArray[i]);
         }
 
         for (int i = 0; i < vertexArray.length; i++) {
             List departList = new ArrayList<ConEdge>();
             List walkList = new ArrayList<WalkEdge>();
-            
-            for (int j=0;j< vertexArray[i].departsIdxs.length;j++){
-                departList.add(edges.get(vertexArray[i].departsIdxs[j]));
+
+            for (int j = 0; j < vertexArray[i].departsIdxs.length; j++) {
+                departList.add(edges[vertexArray[i].departsIdxs[j]]);
             }
-            
-            for (int j=0;j<vertexArray[i].walksIdxs.length;j++){
-                walkList.add(walks.get(vertexArray[i].walksIdxs[j]));
+
+            for (int j = 0; j < vertexArray[i].walksIdxs.length; j++) {
+                walkList.add(walks[vertexArray[i].walksIdxs[j]]);
             }
-            
-            
-            vertices.get(i).departs = departList;
-            vertices.get(i).walks = walkList;
+
+
+            vertices[i].departs = departList;
+            vertices[i].walks = walkList;
         }
 
         for (int i = 0; i < conEdgeArray.length; i++) {
-            edges.get(i).connection = connections.get(conEdgeArray[i].conIndex);
-            edges.get(i).from = vertices.get(conEdgeArray[i].fromIndex);
-            edges.get(i).to = vertices.get(conEdgeArray[i].toIndex);
+            edges[i].connection = connections[conEdgeArray[i].conIndex];
+            edges[i].from = vertices[conEdgeArray[i].fromIndex];
+            edges[i].to = vertices[conEdgeArray[i].toIndex];
         }
 
         for (int i = 0; i < walkEdgeArray.length; i++) {
-            walks.get(i).from = vertices.get(walkEdgeArray[i].fromIndex);
-            walks.get(i).to = vertices.get(walkEdgeArray[i].toIndex);
+            walks[i].from = vertices[walkEdgeArray[i].fromIndex];
+            walks[i].to = vertices[walkEdgeArray[i].toIndex];
         }
 
-        //throw new UnsupportedOperationException("Not supported yet.");
     }
 }
