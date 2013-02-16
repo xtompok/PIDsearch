@@ -26,7 +26,7 @@ import pidsearch.Vertex.Serial;
  */
 public class PrepareData implements Externalizable {
 
-    public static final long serialVersionUID = 0;
+    public static final long serialVersionUID = 2;
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
     static String mapfile = "map.dat";

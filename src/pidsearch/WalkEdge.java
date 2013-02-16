@@ -15,13 +15,17 @@ public class WalkEdge extends Edge{
         type = TransportType.WALK;
     }
     
-    public WalkEdge(WalkEdge.Serial e){}
+    public WalkEdge(WalkEdge.Serial e){
+        super(e);
+    }
     
     static class Serial extends Edge.Serial implements Serializable {
         public Serial(){
             type = TransportType.WALK;
         }
-        public Serial(WalkEdge e){}
+        public Serial(WalkEdge e){
+            super(e);
+        }
     }
     
 }

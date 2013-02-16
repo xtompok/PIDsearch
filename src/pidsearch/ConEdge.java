@@ -20,6 +20,7 @@ public class ConEdge extends Edge{
     }
     
     public ConEdge(ConEdge.Serial e){
+        super(e);
         departure = e.departure;
     }
     
@@ -30,6 +31,7 @@ public class ConEdge extends Edge{
         public Serial(){}
         
         public Serial(ConEdge e){
+            super(e);
             departure = e.departure;
         }
         

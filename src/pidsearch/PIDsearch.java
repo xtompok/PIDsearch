@@ -82,6 +82,7 @@ public class PIDsearch {
                 System.err.println("Error while saving data");
             }
         }
+        
 
         vertices = pd.vertices;
         connections = pd.connections;
@@ -223,7 +224,7 @@ public class PIDsearch {
     }
 
     public String strTime(int time) {
-        return (time / 60) + "." + (time % 60);
+        return String.format("%d.%02d", time/60,time%60);
     }
 
 
