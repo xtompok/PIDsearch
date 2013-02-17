@@ -105,7 +105,15 @@ public class PIDsearch {
         // TODO code application logic here
         PIDsearch search;
         search = new PIDsearch();
-        search.CLI();
+        SearchPreferences prefs;
+        prefs = search.parseCommandLine(args);
+        if (prefs.from==null || prefs.to==null || prefs.when==null){
+            prefs = search.interactiveSearch();
+        }
+        List<Arrival> found;
+        found = search.search.searchConnection(prefs);
+        search.printConnections(found);
+
     }
 
     public Vertex getStation(String type) {
@@ -125,21 +133,136 @@ public class PIDsearch {
         } while (!vertexForName.containsKey(st));
         return vertexForName.get(st);
     }
+    
+    
+    SearchPreferences parseCommandLine(String [] args){
+        // -f -t -d -D -q -t
+        int i=0;
+        String arg;
+       
+        SearchPreferences prefs;
+        prefs = new SearchPreferences();
 
-    public void CLI() {
-        Vertex from;
-        Vertex to;
-        while (true) {
-            from = getStation("vychozi");
-            to = getStation("cilove");
-            Calendar cal;
-            cal = Calendar.getInstance();
-            //cal.set(Calendar.HOUR_OF_DAY, 12);
-            //Date d = cal.getTime();
-            List<Arrival> cons;
-            cons = search.searchConnection(from, to, cal);
-            printConnections(cons);
+        
+        prefs.when = Calendar.getInstance();
+        
+        while (i<args.length){
+            arg = args[i];
+            if (arg.equals("-f")){
+                if (i==args.length-1){ // From
+                    System.out.println("Missing argument for -f");
+                    System.exit(1);
+                }
+                i++;
+                prefs.from = vertexForName.get(args[i]);
+                if (prefs.from == null){
+                    System.out.println("Can't find station "+args[i]);
+                    System.exit(1);
+                }
+            }else if (arg.equals("-t")){ // To
+                if (i==args.length-1){
+                    System.out.println("Missing argument for -t");
+                    System.exit(2);
+                }
+                i++;              
+                prefs.to = vertexForName.get(args[i]);
+                if (prefs.to == null){
+                    System.out.println("Can't find station "+args[i]);
+                    System.exit(1);
+                }
+            }else if (arg.equals("-d")){ // Date DD.MM.YYYY
+                if (i==args.length-1){
+                    System.out.println("Missing argument for -d");
+                    System.exit(3);
+                }
+                i++;
+                String [] parts;
+                parts = args[i].split(".");
+                if (parts.length!=3){
+                    System.out.println("Wrong date "+args[i]);
+                    System.exit(3);
+                }
+                int day=0;
+                int month=0;
+                int year=0;
+                try {
+                    day = Integer.parseInt(parts[0]);
+                } catch (NumberFormatException e){
+                    System.out.println("Wrong day "+parts[0]);
+                    System.exit(3);
+                }
+                try {
+                    month = Integer.parseInt(parts[1]);
+                }catch (NumberFormatException e){}
+                try {
+                    year = Integer.parseInt(parts[2]);
+                } catch (NumberFormatException e ){}
+                prefs.when.set(Calendar.DAY_OF_MONTH, day);
+                if (month!=0) prefs.when.set(Calendar.MONTH,month);
+                if (year!=0) prefs.when.set(Calendar.YEAR, year);
+                
+            }else if (arg.equals("-D")){ // Timestamp
+                if (i==args.length-1){
+                    System.out.println("Missing argument for -D");
+                    System.exit(4);
+                }
+                i++;
+                int timestamp=0;
+                try {
+                    timestamp = Integer.parseInt(args[i]);
+                } catch (NumberFormatException e){
+                    System.out.println(args[i]+" is not valid timestamp");
+                    System.exit(4);
+                }
+                prefs.when.setTimeInMillis(timestamp*1000);
+                
+            }else if (arg.equals("-q")){ // Quiet
+                prefs.quiet = true;
+            }else if (arg.equals("-t")){
+                if (i==args.length-1){
+                    System.out.println("Missing argument for -t");
+                    System.exit(5);
+                }
+                i++;
+                String [] parts;
+                parts = args[i].split(".");
+                if (parts.length!=2){
+                    System.out.println("Wrong time "+args[i]);
+                    System.exit(5);
+                }
+                int hour=0;
+                int min=0;
+                try {
+                    hour = Integer.parseInt(parts[0]);
+                    min = Integer.parseInt(parts[1]);
+                }catch (NumberFormatException e){
+                    System.out.println("Wrong time "+args[i]);
+                    System.exit(5);
+                }
+                prefs.when.set(Calendar.HOUR,hour);
+                prefs.when.set(Calendar.MINUTE,min);
+            }
+            
+            else{
+                System.out.println("Unknown argument "+args[i] );
+                System.exit(240);
+            }
+            i++;
+        
         }
+        return prefs;
+    }
+
+    public SearchPreferences interactiveSearch() {
+        SearchPreferences prefs;
+        prefs = new SearchPreferences();
+        prefs.from = getStation("vychozi");
+        prefs.to = getStation("cilove");
+        Calendar cal;
+        prefs.when = Calendar.getInstance();
+        //cal.set(Calendar.HOUR_OF_DAY, 12);
+        return prefs;
+
     }
 
     public void printConnections(List<Arrival> cons) {

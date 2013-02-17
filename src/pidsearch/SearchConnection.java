@@ -32,7 +32,10 @@ public class SearchConnection {
     }
     
     
-    public List<Arrival> searchConnection(Vertex from, Vertex to, Calendar when) {
+    public List<Arrival> searchConnection(SearchPreferences prefs) {
+        Vertex from = prefs.from;
+        Vertex to = prefs.to;
+        Calendar when = prefs.when;
         System.out.println("Searching connection from " + from.name + " to " + to.name);
 
         HashMap<Vertex, Boolean> usedVertex;
@@ -139,7 +142,7 @@ public class SearchConnection {
         return departEdges;
     }
 
-    public List<Arrival> toFound(PriorityQueue<Arrival> stubs, Vertex to) {
+    private List<Arrival> toFound(PriorityQueue<Arrival> stubs, Vertex to) {
         List<Arrival> found;
         found = new LinkedList<Arrival>();
         for (Arrival stub : stubs) {
