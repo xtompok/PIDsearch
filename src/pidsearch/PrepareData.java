@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import pidsearch.Vertex.Serial;
 
 /**
@@ -26,15 +28,17 @@ import pidsearch.Vertex.Serial;
  */
 public class PrepareData implements Externalizable {
 
-    public static final long serialVersionUID = 3;
+    public static final long serialVersionUID = 12;
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
     static String mapfile = "map.dat";
     static String decttFile = "pid.out";
+    static String walksFile = "walks.dat";
     public Vertex[] vertices;
     public Connection[] connections;
     public ConEdge[] edges;
     public WalkEdge[] walks;
+    int walkSpeed = 60;
 
     public PrepareData() {
     }
@@ -55,8 +59,9 @@ public class PrepareData implements Externalizable {
 
         verticesList = makeVertices(stat, map);
         System.out.println("Vertices made");
-
-        walksList = makeAutoWalks(verticesList);
+        
+        walksList = loadWalks(dataDir+ "/" +walksFile, verticesList);
+        walksList.addAll(makeAutoWalks(verticesList));
         System.out.println("Walks made");
 
         List timeTable;
@@ -67,7 +72,7 @@ public class PrepareData implements Externalizable {
         System.out.print("Timetable loaded, ");
         System.out.print(connectionsList.size() + " connections, ");
         System.out.println(edgesList.size() + " edges");
-        
+
         vertices = new Vertex[verticesList.size()];
         vertices = verticesList.toArray(vertices);
         connections = new Connection[connectionsList.size()];
@@ -85,7 +90,8 @@ public class PrepareData implements Externalizable {
     public static void main(String[] args) {
 
         PrepareData pd = new PrepareData();
-       // System.out.println(pd.verticesList.size() + " vertices, " + pd.edgesList.size() + " edges");
+        pd.makeData();
+        // System.out.println(pd.verticesList.size() + " vertices, " + pd.edgesList.size() + " edges");
         /* for (int i=0;i<100;i++){
          Edge e;
          e = pd.edges.get(i);
@@ -95,7 +101,35 @@ public class PrepareData implements Externalizable {
          System.out.println(e.length);
          System.out.println();
          }*/
-
+        class Station{
+            int id;
+            Set<String> lines;
+            String name;
+            
+            @Override
+            public String toString(){
+                String s = name+" ("+id+"): ";
+                for(String str:lines){
+                    s += str+", ";
+                }
+                return s;
+            }
+        }
+        
+        for (int i=0;i<pd.vertices.length;i++){
+            Vertex v;
+            v = pd.vertices[i];
+            Station s;
+            s = new Station();
+            s.id = i;
+            s.name = v.name;
+            s.lines = new HashSet<String>();
+            for (ConEdge e:v.departs){
+                s.lines.add(e.connection.name);
+            }
+        //    System.out.println(s.toString());
+        }
+/*
 
         Vertex v = pd.vertices[3334];
         System.out.println(v.name);
@@ -106,8 +140,7 @@ public class PrepareData implements Externalizable {
             String to = e.to.name;
             String spoj = e.connection.name;
             System.out.println(h + "." + m + " -> " + spoj + ":" + to);
-        }
-
+        }*/
         for (WalkEdge w : pd.walks) {
             System.out.print(w.from.name);
             System.out.print("->");
@@ -198,6 +231,71 @@ public class PrepareData implements Externalizable {
         return stations;
     }
 
+    private List<WalkEdge> loadWalks(String walksFile, List<Vertex> vertices) {
+        List<WalkEdge> walks;
+        walks = new LinkedList<WalkEdge>();
+
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(walksFile));
+        } catch (FileNotFoundException ex) {
+            System.err.println("Walks file doesn't exist");
+            return walks;
+        }
+
+        String line;
+        int lineNum = 0;
+        try {
+            while ((line = reader.readLine()) != null) {
+                String cols[];
+                cols = line.split(" ");
+                try {
+                    int fromIndex = Integer.parseInt(cols[0]);
+                    int toIndex = Integer.parseInt(cols[1]);
+                    int len;
+                    if (cols.length == 3) {
+                        len = Integer.parseInt(cols[2]);
+                    } else {
+                        len = distance(vertices.get(fromIndex), vertices.get(toIndex))/walkSpeed;
+                    }
+                    
+                    Vertex from;
+                    Vertex to;
+                    from = vertices.get(fromIndex);
+                    to = vertices.get(toIndex);
+
+                    WalkEdge e1;
+                    e1 = new WalkEdge();
+                    e1.from = from;
+                    e1.to = to;
+                    e1.length = len;
+                    from.walks.add(e1);
+                    walks.add(e1);
+                    
+                    WalkEdge e2;
+                    e2 = new WalkEdge();
+                    e2.to = from;
+                    e2.from = to;
+                    e2.length = len;
+                    to.walks.add(e2);
+                    walks.add(e2);
+                    
+                    
+                    
+                    
+                } catch (NumberFormatException ex) {
+                    System.err.println("Syntax error in walks file on line " + lineNum);
+                }
+
+                lineNum++;
+
+            }
+        } catch (IOException e) {
+            System.err.println("Error while reading stations file");
+        }
+        return walks;
+    }
+
     public List<WalkEdge> makeAutoWalks(List<Vertex> vertices) {
 
         List<WalkEdge> walks;
@@ -218,20 +316,26 @@ public class PrepareData implements Externalizable {
         }
 
         for (List<Vertex> list : sameName.values()) {
-            for (Vertex v1 : list) {
-                for (Vertex v2 : list) {
-                    if (v1 == v2) {
-                        continue;
-                    }
+            for (int i=0;i<list.size();i++) {
+                Vertex v1 = list.get(i);
+                for (int j=i+1;j<list.size();j++){
+                    Vertex v2 = list.get(j);
                     int dist = distance(v1, v2);
-                    WalkEdge e;
-                    e = new WalkEdge();
-                    e.from = v1;
-                    e.to = v2;
-                    e.length = dist / 60;
-                    walks.add(e);
-                    v1.walks.add(e);
-                    v2.walks.add(e);
+                    WalkEdge e1;
+                    e1 = new WalkEdge();
+                    e1.from = v1;
+                    e1.to = v2;
+                    e1.length = dist / walkSpeed;
+                    walks.add(e1);
+                    v1.walks.add(e1);
+                    
+                    WalkEdge e2;
+                    e2 = new WalkEdge();
+                    e2.from = v2;
+                    e2.to = v1;
+                    e2.length = dist / walkSpeed;
+                    walks.add(e2);
+                    v2.walks.add(e2);
                 }
             }
         }
@@ -313,11 +417,7 @@ public class PrepareData implements Externalizable {
                     }
                     memStat = stat;
                     memTime = time;
-
-
-
                 }
-
             }
         } catch (IOException e) {
             System.err.println("Error while reading timetable file");
@@ -373,14 +473,14 @@ public class PrepareData implements Externalizable {
         for (int i = 0; i < connections.length; i++) {
             conIndexMap.put(connections[i], i);
         }
-        
-        Map<WalkEdge,Integer> walksIndexMap;
+
+        Map<WalkEdge, Integer> walksIndexMap;
         walksIndexMap = new HashMap<WalkEdge, Integer>(walks.length);
         for (int i = 0; i < walks.length; i++) {
             walksIndexMap.put(walks[i], i);
         }
 
-        System.err.println("Preparing vertices");
+        System.out.println("Preparing vertices");
         for (int i = 0; i < vertices.length; i++) {
             Vertex v;
             v = vertices[i];
@@ -397,7 +497,7 @@ public class PrepareData implements Externalizable {
             vertexArray[i] = ser;
         }
 
-        System.err.println("Preparing walks");
+        System.out.println("Preparing walks");
 
         for (int i = 0; i < walks.length; i++) {
             WalkEdge e;
@@ -409,7 +509,7 @@ public class PrepareData implements Externalizable {
             walkEdgeArray[i] = ser;
         }
 
-        System.err.println("Preparing connection edges");
+        System.out.println("Preparing connection edges");
 
         for (int i = 0; i < edges.length; i++) {
             ConEdge e;
@@ -422,7 +522,7 @@ public class PrepareData implements Externalizable {
             conEdgeArray[i] = ser;
         }
 
-        System.err.println("Writing started");
+        System.out.println("Writing started");
 
         oo.writeObject(vertexArray);
         oo.writeObject(conArray);
@@ -454,17 +554,17 @@ public class PrepareData implements Externalizable {
 
         vertices = new Vertex[vertexArray.length];
         connections = conArray;
-        edges= new ConEdge[conEdgeArray.length];
+        edges = new ConEdge[conEdgeArray.length];
         walks = new WalkEdge[walkEdgeArray.length];
 
-        for (int i=0;i<vertexArray.length;i++){
+        for (int i = 0; i < vertexArray.length; i++) {
             vertices[i] = new Vertex(vertexArray[i]);
         }
-        
-        for (int i=0;i<conEdgeArray.length;i++){
+
+        for (int i = 0; i < conEdgeArray.length; i++) {
             edges[i] = new ConEdge(conEdgeArray[i]);
         }
-        for (int i=0;i<walkEdgeArray.length;i++){
+        for (int i = 0; i < walkEdgeArray.length; i++) {
             walks[i] = new WalkEdge(walkEdgeArray[i]);
         }
 

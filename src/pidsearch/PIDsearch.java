@@ -70,7 +70,6 @@ public class PIDsearch {
                 ObjectOutputStream out = new ObjectOutputStream(
                         new BufferedOutputStream(
                             new FileOutputStream(dataFile)));
-                System.out.println("Stream opened");
                 start = System.nanoTime();
                 out.writeObject(pd);
                 out.close();
@@ -340,7 +339,7 @@ public class PIDsearch {
     }
 
     public void printConEdge(ConEdge e) {
-        System.out.print(e.connection.name + " " + e.from.name + "(" + strTime(e.departure) + ") -> ");
+        System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ +" " + e.from.name + "(" + strTime(e.departure) +") -> ");
         System.out.println(e.to.name + "(" + strTime(e.departure + e.length) + ")");
     }
 
