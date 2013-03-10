@@ -14,6 +14,9 @@ public class SearchPreferences {
     Vertex from;
     Vertex to;
     Calendar when;
-    boolean quiet;
-    
+    boolean quiet = false;
+    boolean graphics = false;
+    int walkSpeed = 60;
+        
 }
+

@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  *
  * @author jethro
@@ -27,12 +28,11 @@ import java.util.Map;
 public class PIDsearch {
 
     Map<String, Vertex> vertexForName;
-    Vertex [] vertices;
-    Connection [] connections;
-    ConEdge [] edges;
-    WalkEdge [] walks;
+    Vertex[] vertices;
+    Connection[] connections;
+    ConEdge[] edges;
+    WalkEdge[] walks;
     static String dataFile = "PrepareData.obj";
-    
     SearchConnection search;
 
     public PIDsearch() {
@@ -43,45 +43,45 @@ public class PIDsearch {
         save = false;
         long start;
         long end;
-         try {
-         ObjectInputStream in = new ObjectInputStream(
-                 new BufferedInputStream(
+        try {
+            ObjectInputStream in = new ObjectInputStream(
+                    new BufferedInputStream(
                     new FileInputStream(dataFile)));
-         System.out.println("Reading data from file");
-         start = System.nanoTime();
-         pd = (PrepareData) in.readObject();
-         in.close();
-         end = System.nanoTime();
-         System.err.println("Loading took "+(end-start)/1000000000+" seconds.");
-         } catch (IOException e) {
+            System.out.println("Reading data from file");
+            start = System.nanoTime();
+            pd = (PrepareData) in.readObject();
+            in.close();
+            end = System.nanoTime();
+            System.err.println("Loading took " + (end - start) / 1000000000 + " seconds.");
+        } catch (IOException e) {
             System.out.println("Reading failed, generating");
             start = System.nanoTime();
             pd = new PrepareData();
             pd.makeData();
             end = System.nanoTime();
-            System.err.println("Generating took "+(end-start)/1000000000+" seconds.");
+            System.err.println("Generating took " + (end - start) / 1000000000 + " seconds.");
             save = true;
-         } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             System.err.println("Class for data not found");
-         }
+        }
         if (save) {
             System.out.println("Saving data to file " + dataFile);
             try {
                 ObjectOutputStream out = new ObjectOutputStream(
                         new BufferedOutputStream(
-                            new FileOutputStream(dataFile)));
+                        new FileOutputStream(dataFile)));
                 start = System.nanoTime();
                 out.writeObject(pd);
                 out.close();
                 end = System.nanoTime();
-                System.err.println("Saving took "+((end-start)/1000000000)+" seconds.");
+                System.err.println("Saving took " + ((end - start) / 1000000000) + " seconds.");
                 System.out.println("Data saved");
             } catch (IOException e) {
                 System.err.println(e);
                 System.err.println("Error while saving data");
             }
         }
-        
+
 
         vertices = pd.vertices;
         connections = pd.connections;
@@ -92,7 +92,7 @@ public class PIDsearch {
         for (Vertex v : vertices) {
             vertexForName.put(v.name, v);
         }
-        
+
         search = new SearchConnection(vertices, connections, edges, walks);
 
     }
@@ -106,7 +106,11 @@ public class PIDsearch {
         search = new PIDsearch();
         SearchPreferences prefs;
         prefs = search.parseCommandLine(args);
-        if (prefs.from==null || prefs.to==null || prefs.when==null){
+        if (prefs.graphics) {
+            GraphicsSearch.main(search);
+            return;
+        }
+        if (prefs.from == null || prefs.to == null || prefs.when == null) {
             prefs = search.interactiveSearch();
         }
         List<Arrival> found;
@@ -117,7 +121,7 @@ public class PIDsearch {
 
     public Vertex getStation(String type) {
         BufferedReader in;
-        in = new BufferedReader(new InputStreamReader(System.in,Charset.forName("utf-8")));
+        in = new BufferedReader(new InputStreamReader(System.in, Charset.forName("utf-8")));
 
         String st;
         st = null;
@@ -132,122 +136,88 @@ public class PIDsearch {
         } while (!vertexForName.containsKey(st));
         return vertexForName.get(st);
     }
-    
-    
-    SearchPreferences parseCommandLine(String [] args){
+
+    SearchPreferences parseCommandLine(String[] args) {
         // -f -t -d -D -q -t
-        int i=0;
+        int i = 0;
         String arg;
-       
+
         SearchPreferences prefs;
         prefs = new SearchPreferences();
 
-        
+
         prefs.when = Calendar.getInstance();
-        
-        while (i<args.length){
+
+        while (i < args.length) {
             arg = args[i];
-            if (arg.equals("-f")){
-                if (i==args.length-1){ // From
+            if (arg.equals("-f")) {
+                if (i == args.length - 1) { // From
                     System.out.println("Missing argument for -f");
                     System.exit(1);
                 }
                 i++;
                 prefs.from = vertexForName.get(args[i]);
-                if (prefs.from == null){
-                    System.out.println("Can't find station "+args[i]);
+                if (prefs.from == null) {
+                    System.out.println("Can't find station " + args[i]);
                     System.exit(1);
                 }
-            }else if (arg.equals("-t")){ // To
-                if (i==args.length-1){
+            } else if (arg.equals("-t")) { // To
+                if (i == args.length - 1) {
                     System.out.println("Missing argument for -t");
                     System.exit(2);
                 }
-                i++;              
+                i++;
                 prefs.to = vertexForName.get(args[i]);
-                if (prefs.to == null){
-                    System.out.println("Can't find station "+args[i]);
+                if (prefs.to == null) {
+                    System.out.println("Can't find station " + args[i]);
                     System.exit(1);
                 }
-            }else if (arg.equals("-d")){ // Date DD.MM.YYYY
-                if (i==args.length-1){
+            } else if (arg.equals("-d")) { // Date DD.MM.YYYY
+                if (i == args.length - 1) {
                     System.out.println("Missing argument for -d");
                     System.exit(3);
                 }
                 i++;
-                String [] parts;
-                parts = args[i].split(".");
-                if (parts.length!=3){
-                    System.out.println("Wrong date "+args[i]);
+                prefs.when = Utilities.parseDate(args[i], prefs.when);
+                if (prefs.when==null){
                     System.exit(3);
                 }
-                int day=0;
-                int month=0;
-                int year=0;
-                try {
-                    day = Integer.parseInt(parts[0]);
-                } catch (NumberFormatException e){
-                    System.out.println("Wrong day "+parts[0]);
-                    System.exit(3);
-                }
-                try {
-                    month = Integer.parseInt(parts[1]);
-                }catch (NumberFormatException e){}
-                try {
-                    year = Integer.parseInt(parts[2]);
-                } catch (NumberFormatException e ){}
-                prefs.when.set(Calendar.DAY_OF_MONTH, day);
-                if (month!=0) prefs.when.set(Calendar.MONTH,month);
-                if (year!=0) prefs.when.set(Calendar.YEAR, year);
-                
-            }else if (arg.equals("-D")){ // Timestamp
-                if (i==args.length-1){
+
+            } else if (arg.equals("-D")) { // Timestamp
+                if (i == args.length - 1) {
                     System.out.println("Missing argument for -D");
                     System.exit(4);
                 }
                 i++;
-                int timestamp=0;
+                int timestamp = 0;
                 try {
                     timestamp = Integer.parseInt(args[i]);
-                } catch (NumberFormatException e){
-                    System.out.println(args[i]+" is not valid timestamp");
+                } catch (NumberFormatException e) {
+                    System.out.println(args[i] + " is not valid timestamp");
                     System.exit(4);
                 }
-                prefs.when.setTimeInMillis(timestamp*1000);
-                
-            }else if (arg.equals("-q")){ // Quiet
+                prefs.when.setTimeInMillis(timestamp * 1000);
+
+            } else if (arg.equals("-q")) { // Quiet
                 prefs.quiet = true;
-            }else if (arg.equals("-t")){
-                if (i==args.length-1){
+            } else if (arg.equals("-t")) {
+                if (i == args.length - 1) {
                     System.out.println("Missing argument for -t");
                     System.exit(5);
                 }
                 i++;
-                String [] parts;
-                parts = args[i].split(".");
-                if (parts.length!=2){
-                    System.out.println("Wrong time "+args[i]);
+                prefs.when = Utilities.parseTime(args[i],prefs.when);
+                if (prefs.when==null){
                     System.exit(5);
                 }
-                int hour=0;
-                int min=0;
-                try {
-                    hour = Integer.parseInt(parts[0]);
-                    min = Integer.parseInt(parts[1]);
-                }catch (NumberFormatException e){
-                    System.out.println("Wrong time "+args[i]);
-                    System.exit(5);
-                }
-                prefs.when.set(Calendar.HOUR,hour);
-                prefs.when.set(Calendar.MINUTE,min);
-            }
-            
-            else{
-                System.out.println("Unknown argument "+args[i] );
+            } else if (arg.equals("-g")) {
+                prefs.graphics = true;
+            } else {
+                System.out.println("Unknown argument " + args[i]);
                 System.exit(240);
             }
             i++;
-        
+
         }
         return prefs;
     }
@@ -265,7 +235,7 @@ public class PIDsearch {
     }
 
     public void printConnections(List<Arrival> cons) {
-        if (cons == null){
+        if (cons == null) {
             System.out.println("Spojeni nenalezeno");
             return;
         }
@@ -296,7 +266,7 @@ public class PIDsearch {
             if (e instanceof WalkEdge) {
                 if (ce != null) {
                     list.add(ce);
-                     ce = null;
+                    ce = null;
                 }
                 if (we == null) {
                     we = new WalkEdge();
@@ -322,14 +292,14 @@ public class PIDsearch {
                     ce = new ConEdge();
                     ce.departure = ((ConEdge) e).departure;
                     ce.from = e.from;
-                    ce.connection = ((ConEdge)e ).connection;
+                    ce.connection = ((ConEdge) e).connection;
                 }
 
                 ce.to = ((ConEdge) e).to;
                 ce.length += e.length;
             }
         }
-        if ((we != null)&&(!we.from.name.equals(we.to.name))) {
+        if ((we != null) && (!we.from.name.equals(we.to.name))) {
             list.add(we);
         }
         if (ce != null) {
@@ -339,18 +309,13 @@ public class PIDsearch {
     }
 
     public void printConEdge(ConEdge e) {
-        System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ +" " + e.from.name + "(" + strTime(e.departure) +") -> ");
-        System.out.println(e.to.name + "(" + strTime(e.departure + e.length) + ")");
+        System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ + " " + e.from.name + "(" + Utilities.strTime(e.departure) + ") -> ");
+        System.out.println(e.to.name + "(" + Utilities.strTime(e.departure + e.length) + ")");
     }
 
     public void printWalkEdge(WalkEdge e) {
         System.out.println(e.from.name + " -> " + e.to.name + " (" + e.length + ")");
     }
 
-    public String strTime(int time) {
-        return String.format("%d.%02d", time/60,time%60);
-    }
 
-
-    
 }
