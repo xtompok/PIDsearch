@@ -12,6 +12,7 @@ import java.util.List;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
@@ -19,14 +20,14 @@ import javax.swing.table.TableModel;
  *
  * @author jethro
  */
-public class GraphicsSearch extends javax.swing.JFrame {
+public class GraphicalInterface extends javax.swing.JFrame {
 
     PIDsearch search;
 
     /**
      * Creates new form GraphicsSearch
      */
-    public GraphicsSearch(PIDsearch s) {
+    public GraphicalInterface(PIDsearch s) {
         search = s;
         initComponents();
     }
@@ -54,6 +55,8 @@ public class GraphicsSearch extends javax.swing.JFrame {
         fromErrorLabel = new javax.swing.JLabel();
         toErrorLabel = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        speedSpinner = new javax.swing.JSpinner();
         jScrollPane = new javax.swing.JScrollPane();
         foundPane = new javax.swing.JPanel();
 
@@ -98,6 +101,8 @@ public class GraphicsSearch extends javax.swing.JFrame {
         errorLabel.setForeground(new java.awt.Color(255, 0, 0));
         errorLabel.setText("Chyba lávky!");
 
+        jLabel5.setText("Rychlost chůze:");
+
         org.jdesktop.layout.GroupLayout searchPanelLayout = new org.jdesktop.layout.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
@@ -123,7 +128,11 @@ public class GraphicsSearch extends javax.swing.JFrame {
                                 .add(jLabel3)
                                 .add(18, 18, 18)
                                 .add(dateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(0, 252, Short.MAX_VALUE))
+                                .add(34, 34, 34)
+                                .add(jLabel5)
+                                .add(18, 18, 18)
+                                .add(speedSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 60, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 41, Short.MAX_VALUE))
                             .add(toField)))
                     .add(searchPanelLayout.createSequentialGroup()
                         .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -148,15 +157,19 @@ public class GraphicsSearch extends javax.swing.JFrame {
                 .add(2, 2, 2)
                 .add(toErrorLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(timeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3)
-                    .add(dateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(vyhledatBut)
-                    .add(errorLabel))
+                .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(searchPanelLayout.createSequentialGroup()
+                        .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel4)
+                            .add(timeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel3)
+                            .add(dateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel5))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(vyhledatBut)
+                            .add(errorLabel)))
+                    .add(speedSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(211, Short.MAX_VALUE))
         );
 
@@ -197,21 +210,21 @@ public class GraphicsSearch extends javax.swing.JFrame {
         pref = new SearchPreferences();
 
         System.err.println("Clicked");
-        if (!search.vertexForName.containsKey(fromField.getText())) {
+        if (!Utilities.isVertexForName(fromField.getText())) {
             fromErrorLabel.setText("Zastavka nebyla nalezena.");
             fromErrorLabel.setVisible(true);
             cancel = true;
         } else {
-            pref.from = search.vertexForName.get(fromField.getText());
+            pref.from = Utilities.getVertexForName(fromField.getText());
             fromErrorLabel.setVisible(false);
         }
-        if (!search.vertexForName.containsKey(toField.getText())) {
+        if (!Utilities.isVertexForName(toField.getText())) {
             toErrorLabel.setText("Zastavka nebyla nalezena.");
             toErrorLabel.setVisible(true);
             cancel = true;
         } else {
             toErrorLabel.setVisible(false);
-            pref.to = search.vertexForName.get(toField.getText());
+            pref.to = Utilities.getVertexForName(toField.getText());
         }
 
         pref.when = Utilities.parseDate(dateField.getText());
@@ -227,24 +240,21 @@ public class GraphicsSearch extends javax.swing.JFrame {
             cancel = true;
         }}
         
+        pref.walkSpeed = ((SpinnerNumberModel)speedSpinner.getModel()).getNumber().intValue();
+        
 
         if (cancel) {
             return;
         }
         
-        System.err.println(Utilities.debugDate(pref.when));
         System.err.println("Searching...");
-        errorLabel.setText(pref.from.name + "->" + pref.to.name);
         
         List<Arrival> cons;
         cons = search.search.searchConnection(pref);
-        search.printConnections(cons);
         
+        foundPane.removeAll();
         foundPane.setLayout(new GridLayout(0,1));
-        System.err.println(foundPane.getLayout());
         
-        List<ResultsTableModel> tm;
-        tm = new LinkedList<ResultsTableModel>();
         for (Arrival arr: cons){
             JTable table;
             table = new JTable(new ResultsTableModel(arr));
@@ -353,8 +363,8 @@ public class GraphicsSearch extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                GraphicsSearch gs;
-                gs = new GraphicsSearch(search);
+                GraphicalInterface gs;
+                gs = new GraphicalInterface(search);
                 gs.errorLabel.setVisible(false);
                 gs.fromErrorLabel.setVisible(false);
                 gs.toErrorLabel.setVisible(false);
@@ -363,6 +373,7 @@ public class GraphicsSearch extends javax.swing.JFrame {
                 gs.dateField.setText(Utilities.strDate(cal));
                 gs.setVisible(true);
                 gs.searchPanel.getRootPane().setDefaultButton(gs.vyhledatBut);
+                gs.speedSpinner.setModel(new SpinnerNumberModel(60,1,600,1));
             }
         });
     }
@@ -376,9 +387,11 @@ public class GraphicsSearch extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel searchPanel;
+    private javax.swing.JSpinner speedSpinner;
     private javax.swing.JTextField timeField;
     private javax.swing.JLabel toErrorLabel;
     private javax.swing.JTextField toField;

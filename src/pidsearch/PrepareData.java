@@ -38,7 +38,7 @@ public class PrepareData implements Externalizable {
     public Connection[] connections;
     public ConEdge[] edges;
     public WalkEdge[] walks;
-    int walkSpeed = 60;
+    int walkSpeed = 60; //FIXME delete and make calculations...
 
     public PrepareData() {
     }

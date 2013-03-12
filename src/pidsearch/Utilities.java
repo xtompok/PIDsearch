@@ -7,15 +7,39 @@ package pidsearch;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author jethro
  */
 public class Utilities {
+    public static Map<String,Vertex> vertexForName;
+    
+    public static void genVertexForName(Vertex[] vertices){
+        vertexForName = new HashMap<String, Vertex>();
+        for (Vertex v : vertices) {
+            vertexForName.put(v.name, v);
+        }
+    }
+    
+    public static Vertex getVertexForName(String name){
+        if (vertexForName == null)
+            throw new NullPointerException("vertexForName unitialized");
+        else return vertexForName.get(name);
+    }
+    
+    public static boolean isVertexForName(String name){
+        if (vertexForName == null)
+            throw new NullPointerException("vertexForName unitialized");
+        else return vertexForName.containsKey(name);
+    }
+    
 
+    //TODO rewrite using DateFormat 
     public static String strTime(int time) {
         return String.format("%d.%02d", time / 60, time % 60);
     }
@@ -86,8 +110,8 @@ public class Utilities {
             System.out.println("Wrong time seg "+ parts.length+"," + str);
             return null;
         }
-        int hour = 0;
-        int min = 0;
+        int hour;
+        int min;
         try {
             hour = Integer.parseInt(parts[0]);
             min = Integer.parseInt(parts[1]);
