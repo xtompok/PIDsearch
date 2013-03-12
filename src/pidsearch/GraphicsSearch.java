@@ -4,9 +4,16 @@
  */
 package pidsearch;
 
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.List;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 /**
  *
@@ -47,7 +54,8 @@ public class GraphicsSearch extends javax.swing.JFrame {
         fromErrorLabel = new javax.swing.JLabel();
         toErrorLabel = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
-        foundPanel = new javax.swing.JScrollPane();
+        jScrollPane = new javax.swing.JScrollPane();
+        foundPane = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -75,7 +83,6 @@ public class GraphicsSearch extends javax.swing.JFrame {
         dateField.setNextFocusableComponent(vyhledatBut);
 
         vyhledatBut.setText("Vyhledat");
-        vyhledatBut.setName("null"); // NOI18N
         vyhledatBut.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 vyhledatButActionPerformed(evt);
@@ -102,26 +109,27 @@ public class GraphicsSearch extends javax.swing.JFrame {
                         .add(vyhledatBut, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
                         .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, searchPanelLayout.createSequentialGroup()
+                    .add(searchPanelLayout.createSequentialGroup()
+                        .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel1)
+                            .add(jLabel2)
+                            .add(jLabel4))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(fromField)
+                            .add(searchPanelLayout.createSequentialGroup()
+                                .add(timeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(30, 30, 30)
+                                .add(jLabel3)
+                                .add(18, 18, 18)
+                                .add(dateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(0, 252, Short.MAX_VALUE))
+                            .add(toField)))
+                    .add(searchPanelLayout.createSequentialGroup()
                         .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(fromErrorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(searchPanelLayout.createSequentialGroup()
-                                .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel1)
-                                    .add(jLabel2)
-                                    .add(jLabel4))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(searchPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(searchPanelLayout.createSequentialGroup()
-                                        .add(timeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(30, 30, 30)
-                                        .add(jLabel3)
-                                        .add(18, 18, 18)
-                                        .add(dateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(fromField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                                    .add(toField)))
                             .add(toErrorLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 316, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(0, 8, Short.MAX_VALUE)))
+                        .add(160, 160, 160)))
                 .addContainerGap())
         );
         searchPanelLayout.setVerticalGroup(
@@ -153,7 +161,21 @@ public class GraphicsSearch extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("Parametry", searchPanel);
-        jTabbedPane1.addTab("Výsledky", foundPanel);
+
+        org.jdesktop.layout.GroupLayout foundPaneLayout = new org.jdesktop.layout.GroupLayout(foundPane);
+        foundPane.setLayout(foundPaneLayout);
+        foundPaneLayout.setHorizontalGroup(
+            foundPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 542, Short.MAX_VALUE)
+        );
+        foundPaneLayout.setVerticalGroup(
+            foundPaneLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 384, Short.MAX_VALUE)
+        );
+
+        jScrollPane.setViewportView(foundPane);
+
+        jTabbedPane1.addTab("Výsledky", jScrollPane);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -177,27 +199,31 @@ public class GraphicsSearch extends javax.swing.JFrame {
         System.err.println("Clicked");
         if (!search.vertexForName.containsKey(fromField.getText())) {
             fromErrorLabel.setText("Zastavka nebyla nalezena.");
+            fromErrorLabel.setVisible(true);
             cancel = true;
         } else {
             pref.from = search.vertexForName.get(fromField.getText());
-            fromErrorLabel.setText(" ");
+            fromErrorLabel.setVisible(false);
         }
         if (!search.vertexForName.containsKey(toField.getText())) {
             toErrorLabel.setText("Zastavka nebyla nalezena.");
+            toErrorLabel.setVisible(true);
             cancel = true;
         } else {
-            toErrorLabel.setText(" ");
+            toErrorLabel.setVisible(false);
             pref.to = search.vertexForName.get(toField.getText());
         }
 
         pref.when = Utilities.parseDate(dateField.getText());
         if (pref.when==null){
             errorLabel.setText("Chybne datum");
+            errorLabel.setVisible(true);
             cancel = true;
         } else {
         pref.when = Utilities.parseTime(timeField.getText(),pref.when);
         if (pref.when==null){
             errorLabel.setText("Chybny cas");
+            errorLabel.setVisible(true);
             cancel = true;
         }}
         
@@ -205,15 +231,119 @@ public class GraphicsSearch extends javax.swing.JFrame {
         if (cancel) {
             return;
         }
+        
+        System.err.println(Utilities.debugDate(pref.when));
         System.err.println("Searching...");
         errorLabel.setText(pref.from.name + "->" + pref.to.name);
-        pref.when = Calendar.getInstance();
         
         List<Arrival> cons;
         cons = search.search.searchConnection(pref);
         search.printConnections(cons);
+        
+        foundPane.setLayout(new GridLayout(0,1));
+        System.err.println(foundPane.getLayout());
+        
+        List<ResultsTableModel> tm;
+        tm = new LinkedList<ResultsTableModel>();
+        for (Arrival arr: cons){
+            JTable table;
+            table = new JTable(new ResultsTableModel(arr));
+            ColumnResizer.adjustColumnPreferredWidths(table);
+            table.setPreferredScrollableViewportSize
+                (new Dimension(500, table.getRowCount() * table.getRowHeight()));
+            table.setFillsViewportHeight(false);
+            JScrollPane sp;
+            sp = new JScrollPane(table);
+            sp.setPreferredSize(table.getPreferredScrollableViewportSize());
+            foundPane.add(sp);
+        }
+        
+        jTabbedPane1.setSelectedIndex(1);
+        
     }//GEN-LAST:event_vyhledatButActionPerformed
 
+    class ResultsTableModel implements TableModel{
+        
+        String[] colNames = {"Spoj","Odkud","Odj.","Kam","Přj."};
+        String[][] table;
+        
+
+        
+        public ResultsTableModel(Arrival arrival){
+            List<Edge> edges = Utilities.condenseEdges(arrival.asList());
+            List<String []> rows;
+            rows = new LinkedList<String[]>();
+            
+            for (Edge e: edges){
+                String [] row;
+                row = new String[colNames.length];
+                row[1] = e.from.name;
+                row[3] = e.to.name;
+                if (e instanceof WalkEdge){
+                    row[0] = "Přesun";
+                } else if (e instanceof ConEdge){
+                    row[0] = ((ConEdge)e).connection.name;
+                    row[2] = Utilities.strTime(((ConEdge) e).departure);
+                    row[4] = Utilities.strTime(((ConEdge) e).departure + e.length);
+                }
+                rows.add(row);
+            }
+            table = new String[rows.size()][colNames.length];
+            for (int i=0;i<rows.size();i++){
+                table[i] = rows.get(i);
+            }
+            
+        
+        }
+        
+        
+        @Override
+        public int getRowCount() {
+            return table.length;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return colNames.length;
+        }
+
+        @Override
+        public String getColumnName(int i) {
+            return colNames[i];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int i) {
+            return String.class;
+        }
+
+        @Override
+        public boolean isCellEditable(int i, int i1) {
+            return false;
+        }
+
+        @Override
+        public Object getValueAt(int i, int i1) {
+            return table[i][i1];
+        }
+
+        @Override
+        public void setValueAt(Object o, int i, int i1) {
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void addTableModelListener(TableModelListener tl) {
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void removeTableModelListener(TableModelListener tl) {
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -225,26 +355,28 @@ public class GraphicsSearch extends javax.swing.JFrame {
             public void run() {
                 GraphicsSearch gs;
                 gs = new GraphicsSearch(search);
-                gs.errorLabel.setText(" ");
-                gs.fromErrorLabel.setText(" ");
-                gs.toErrorLabel.setText(" ");
+                gs.errorLabel.setVisible(false);
+                gs.fromErrorLabel.setVisible(false);
+                gs.toErrorLabel.setVisible(false);
                 Calendar cal = Calendar.getInstance();
                 gs.timeField.setText(Utilities.strTime(cal));
                 gs.dateField.setText(Utilities.strDate(cal));
                 gs.setVisible(true);
+                gs.searchPanel.getRootPane().setDefaultButton(gs.vyhledatBut);
             }
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField dateField;
     private javax.swing.JLabel errorLabel;
-    private javax.swing.JScrollPane foundPanel;
+    private javax.swing.JPanel foundPane;
     private javax.swing.JLabel fromErrorLabel;
     private javax.swing.JTextField fromField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JScrollPane jScrollPane;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTextField timeField;

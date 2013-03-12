@@ -4,7 +4,11 @@
  */
 package pidsearch;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -20,11 +24,15 @@ public class Utilities {
     }
     
     public static String strDate(Calendar cal){
-        return String.format("%d.%d.%d", cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.MONTH)+1,cal.get(Calendar.YEAR));
+        return String.format("%d.%d.%d", cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.MONTH),cal.get(Calendar.YEAR));
     }
 
     public static Calendar parseDate(String str) {
         return parseDate(str, Calendar.getInstance());
+    }
+    
+    public static String debugDate(Calendar cal){
+        return DateFormat.getInstance().format(cal.getTime());
     }
 
     public static Calendar parseDate(String str, Calendar cal) {
@@ -59,7 +67,7 @@ public class Utilities {
             cal.set(Calendar.DAY_OF_MONTH, day);
         }
         if (month != 0) {
-            cal.set(Calendar.MONTH, month);
+            cal.set(Calendar.MONTH, month-1);
         }
         if (year != 0) {
             cal.set(Calendar.YEAR, year);
@@ -87,8 +95,61 @@ public class Utilities {
             System.out.println("Wrong time " + str);
             return null;
         }
-        cal.set(Calendar.HOUR, hour);
+        cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, min);
         return cal;
+    }
+    
+    public static List<Edge> condenseEdges(List<Edge> edges) {
+        List<Edge> list;
+        list = new LinkedList<Edge>();
+        WalkEdge we;
+        we = null;
+        ConEdge ce;
+        ce = null;
+        for (Edge e : edges) {
+            if (e instanceof WalkEdge) {
+                if (ce != null) {
+                    list.add(ce);
+                    ce = null;
+                }
+                if (we == null) {
+                    we = new WalkEdge();
+                    we.from = e.from;
+                    we.length = 0;
+                }
+                we.to = e.to;
+                we.length += e.length;
+            } else if (e instanceof ConEdge) {
+                if (we != null) {
+                    list.add(we);
+                    we = null;
+                }
+                if (ce == null) {
+                    ce = new ConEdge();
+                    ce.departure = ((ConEdge) e).departure;
+                    ce.connection = ((ConEdge) e).connection;
+                    ce.from = e.from;
+                }
+
+                if (!ce.connection.equals(((ConEdge) e).connection)) {
+                    list.add(ce);
+                    ce = new ConEdge();
+                    ce.departure = ((ConEdge) e).departure;
+                    ce.from = e.from;
+                    ce.connection = ((ConEdge) e).connection;
+                }
+
+                ce.to = ((ConEdge) e).to;
+                ce.length += e.length;
+            }
+        }
+        if ((we != null) && (!we.from.name.equals(we.to.name))) {
+            list.add(we);
+        }
+        if (ce != null) {
+            list.add(ce);
+        }
+        return list;
     }
 }

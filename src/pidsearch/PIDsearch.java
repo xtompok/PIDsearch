@@ -240,7 +240,7 @@ public class PIDsearch {
             return;
         }
         for (Arrival a : cons) {
-            List<Edge> edges = condenseEdges(a.asList());
+            List<Edge> edges = Utilities.condenseEdges(a.asList());
             System.out.print("Spojeni z " + edges.get(0).from.name);
             System.out.println(" do " + edges.get(edges.size() - 1).to.name);
 
@@ -255,58 +255,7 @@ public class PIDsearch {
         }
     }
 
-    public List<Edge> condenseEdges(List<Edge> edges) {
-        List<Edge> list;
-        list = new LinkedList<Edge>();
-        WalkEdge we;
-        we = null;
-        ConEdge ce;
-        ce = null;
-        for (Edge e : edges) {
-            if (e instanceof WalkEdge) {
-                if (ce != null) {
-                    list.add(ce);
-                    ce = null;
-                }
-                if (we == null) {
-                    we = new WalkEdge();
-                    we.from = e.from;
-                    we.length = 0;
-                }
-                we.to = e.to;
-                we.length += e.length;
-            } else if (e instanceof ConEdge) {
-                if (we != null) {
-                    list.add(we);
-                    we = null;
-                }
-                if (ce == null) {
-                    ce = new ConEdge();
-                    ce.departure = ((ConEdge) e).departure;
-                    ce.connection = ((ConEdge) e).connection;
-                    ce.from = e.from;
-                }
-
-                if (!ce.connection.equals(((ConEdge) e).connection)) {
-                    list.add(ce);
-                    ce = new ConEdge();
-                    ce.departure = ((ConEdge) e).departure;
-                    ce.from = e.from;
-                    ce.connection = ((ConEdge) e).connection;
-                }
-
-                ce.to = ((ConEdge) e).to;
-                ce.length += e.length;
-            }
-        }
-        if ((we != null) && (!we.from.name.equals(we.to.name))) {
-            list.add(we);
-        }
-        if (ce != null) {
-            list.add(ce);
-        }
-        return list;
-    }
+    
 
     public void printConEdge(ConEdge e) {
         System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ + " " + e.from.name + "(" + Utilities.strTime(e.departure) + ") -> ");
