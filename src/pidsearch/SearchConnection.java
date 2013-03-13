@@ -7,36 +7,38 @@ package pidsearch;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  *
  * @author jethro
  */
 public class SearchConnection {
-    Vertex [] vertices;
-    Connection [] connections;
-    ConEdge [] edges;
-    WalkEdge [] walks;
 
-    public SearchConnection(Vertex [] vertices,
-            Connection [] connections,
-            ConEdge [] edges,
-            WalkEdge [] walks) {
+    Vertex[] vertices;
+    Connection[] connections;
+    ConEdge[] edges;
+    WalkEdge[] walks;
+
+    public SearchConnection(Vertex[] vertices,
+            Connection[] connections,
+            ConEdge[] edges,
+            WalkEdge[] walks) {
         this.vertices = vertices;
         this.connections = connections;
         this.edges = edges;
-        this.walks = walks; 
+        this.walks = walks;
     }
-    
-    
-    public List<Arrival> searchConnection(SearchPreferences prefs) {
+
+    public Set<Arrival> searchConnection(SearchPreferences prefs) {
         Vertex from = prefs.from;
         Vertex to = prefs.to;
         Calendar when = prefs.when;
-        System.out.println("Searching connection from " + from.name + " to " + to.name);
+        System.err.println("Searching connection from " + from.name + " to " + to.name);
 
         HashMap<Vertex, Boolean> usedVertex;
 
@@ -44,7 +46,7 @@ public class SearchConnection {
         for (Vertex v : vertices) {
             usedVertex.put(v, Boolean.FALSE);
         }
-        
+
         ArrivalComparator ac;
         ac = new ArrivalComparator();
 
@@ -58,13 +60,21 @@ public class SearchConnection {
         departs = findDepartures(from, minute, when, wait);
 
         for (ConEdge e : departs) {
-            stubs.add(new Arrival(e));
+            Arrival a;
+            a = new Arrival(e);
+            if (!stubs.contains(a)) {
+                stubs.add(a);
+            }
         }
 
         for (WalkEdge v : from.walks) {
             departs = findDepartures(v.to, minute, when, wait);
             for (ConEdge e : departs) {
-                stubs.add(new Arrival(e));
+                Arrival a;
+                a = new Arrival(e);
+                if (!stubs.contains(a)) {
+                    stubs.add(a);
+                }
             }
         }
 
@@ -76,7 +86,7 @@ public class SearchConnection {
 
         while (!found) {
             first = stubs.poll();
-            if (first==null){
+            if (first == null) {
                 return null;
             }
 
@@ -84,11 +94,15 @@ public class SearchConnection {
 
             for (ConEdge e : departs) {
 
-                if (e.to.equals(to)) {
+                if (e.to.name.equals(to.name)) { //FIXME Fix in future releases
                     found = true;
                 }
                 if (!usedVertex.get(e.to)) {
-                    stubs.add(new Arrival(first, e));
+                    Arrival a;
+                    a = new Arrival(first, e);
+                    if (!stubs.contains(a)) {
+                        stubs.add(a);
+                    }
                     usedVertex.put(e.to, Boolean.TRUE);
                 }
 
@@ -99,7 +113,11 @@ public class SearchConnection {
                     found = true;
                 }
                 if (!usedVertex.get(e.to)) {
-                    stubs.add(new Arrival(first, e));
+                    Arrival a;
+                    a = new Arrival(first,e,prefs);
+                    if (!stubs.contains(a)) {
+                        stubs.add(a);
+                    }
                     usedVertex.put(e.to, Boolean.TRUE);
                 }
             }
@@ -111,7 +129,6 @@ public class SearchConnection {
     public List<ConEdge> findDepartures(Vertex from, int minute, Calendar date, int range) {
         List<ConEdge> departs;
         departs = from.departs;
-
 
         ConEdge whenEdge;
         whenEdge = new ConEdge();
@@ -142,15 +159,14 @@ public class SearchConnection {
         return departEdges;
     }
 
-    private List<Arrival> toFound(PriorityQueue<Arrival> stubs, Vertex to) {
-        List<Arrival> found;
-        found = new LinkedList<Arrival>();
+    private Set<Arrival> toFound(PriorityQueue<Arrival> stubs, Vertex to) {
+        Set<Arrival> found;
+        found = new HashSet<Arrival>();
         for (Arrival stub : stubs) {
             if (stub.edge.to.name.equals(to.name)) {
-                found.add(stub);
+                    found.add(stub);
             }
         }
         return found;
     }
-    
 }

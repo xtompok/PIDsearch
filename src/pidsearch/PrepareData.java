@@ -28,7 +28,7 @@ import pidsearch.Vertex.Serial;
  */
 public class PrepareData implements Externalizable {
 
-    public static final long serialVersionUID = 12;
+    public static final long serialVersionUID = 14;
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
     static String mapfile = "map.dat";
@@ -38,7 +38,6 @@ public class PrepareData implements Externalizable {
     public Connection[] connections;
     public ConEdge[] edges;
     public WalkEdge[] walks;
-    int walkSpeed = 60; //FIXME delete and make calculations...
 
     public PrepareData() {
     }
@@ -256,7 +255,7 @@ public class PrepareData implements Externalizable {
                     if (cols.length == 3) {
                         len = Integer.parseInt(cols[2]);
                     } else {
-                        len = distance(vertices.get(fromIndex), vertices.get(toIndex))/walkSpeed;
+                        len = distance(vertices.get(fromIndex), vertices.get(toIndex));
                     }
                     
                     Vertex from;
@@ -325,7 +324,7 @@ public class PrepareData implements Externalizable {
                     e1 = new WalkEdge();
                     e1.from = v1;
                     e1.to = v2;
-                    e1.length = dist / walkSpeed;
+                    e1.length = dist;
                     walks.add(e1);
                     v1.walks.add(e1);
                     
@@ -333,7 +332,7 @@ public class PrepareData implements Externalizable {
                     e2 = new WalkEdge();
                     e2.from = v2;
                     e2.to = v1;
-                    e2.length = dist / walkSpeed;
+                    e2.length = dist;
                     walks.add(e2);
                     v2.walks.add(e2);
                 }

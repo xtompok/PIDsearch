@@ -9,9 +9,11 @@ import java.awt.GridLayout;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -23,6 +25,7 @@ import javax.swing.table.TableModel;
 public class GraphicalInterface extends javax.swing.JFrame {
 
     PIDsearch search;
+    SearchPreferences prefs;
 
     /**
      * Creates new form GraphicsSearch
@@ -206,8 +209,7 @@ public class GraphicalInterface extends javax.swing.JFrame {
 
     private void vyhledatButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vyhledatButActionPerformed
         boolean cancel = false;
-        SearchPreferences pref;
-        pref = new SearchPreferences();
+        prefs = new SearchPreferences();
 
         System.err.println("Clicked");
         if (!Utilities.isVertexForName(fromField.getText())) {
@@ -215,7 +217,7 @@ public class GraphicalInterface extends javax.swing.JFrame {
             fromErrorLabel.setVisible(true);
             cancel = true;
         } else {
-            pref.from = Utilities.getVertexForName(fromField.getText());
+            prefs.from = Utilities.getVertexForName(fromField.getText());
             fromErrorLabel.setVisible(false);
         }
         if (!Utilities.isVertexForName(toField.getText())) {
@@ -224,89 +226,112 @@ public class GraphicalInterface extends javax.swing.JFrame {
             cancel = true;
         } else {
             toErrorLabel.setVisible(false);
-            pref.to = Utilities.getVertexForName(toField.getText());
+            prefs.to = Utilities.getVertexForName(toField.getText());
         }
 
-        pref.when = Utilities.parseDate(dateField.getText());
-        if (pref.when==null){
+        prefs.when = Utilities.parseDate(dateField.getText());
+        if (prefs.when == null) {
             errorLabel.setText("Chybne datum");
             errorLabel.setVisible(true);
             cancel = true;
         } else {
-        pref.when = Utilities.parseTime(timeField.getText(),pref.when);
-        if (pref.when==null){
-            errorLabel.setText("Chybny cas");
-            errorLabel.setVisible(true);
-            cancel = true;
-        }}
-        
-        pref.walkSpeed = ((SpinnerNumberModel)speedSpinner.getModel()).getNumber().intValue();
-        
+            prefs.when = Utilities.parseTime(timeField.getText(), prefs.when);
+            if (prefs.when == null) {
+                errorLabel.setText("Chybny cas");
+                errorLabel.setVisible(true);
+                cancel = true;
+            }
+        }
+
+        prefs.walkSpeed = ((SpinnerNumberModel) speedSpinner.getModel()).getNumber().intValue();
+
 
         if (cancel) {
             return;
         }
-        
+
         System.err.println("Searching...");
-        
-        List<Arrival> cons;
-        cons = search.search.searchConnection(pref);
-        
+
+        Set<Arrival> cons;
+        cons = search.search.searchConnection(prefs);
+        if (cons==null){
+            errorLabel.setText("Spojeni nenalezeno");
+            errorLabel.setVisible(true);
+            return;
+        } else
+        {
+            errorLabel.setVisible(false);
+        }
+
         foundPane.removeAll();
-        foundPane.setLayout(new GridLayout(0,1));
-        
-        for (Arrival arr: cons){
+        foundPane.setLayout(new GridLayout(0, 1));
+
+        for (Arrival arr : cons) {
             JTable table;
             table = new JTable(new ResultsTableModel(arr));
             ColumnResizer.adjustColumnPreferredWidths(table);
-            table.setPreferredScrollableViewportSize
-                (new Dimension(500, table.getRowCount() * table.getRowHeight()));
+            table.setPreferredScrollableViewportSize(new Dimension(500, table.getRowCount() * table.getRowHeight()));
             table.setFillsViewportHeight(false);
+            table.setRowSelectionAllowed(false);
+            table.setCellSelectionEnabled(false);
             JScrollPane sp;
             sp = new JScrollPane(table);
             sp.setPreferredSize(table.getPreferredScrollableViewportSize());
             foundPane.add(sp);
         }
-        
+
         jTabbedPane1.setSelectedIndex(1);
-        
+
     }//GEN-LAST:event_vyhledatButActionPerformed
 
-    class ResultsTableModel implements TableModel{
-        
-        String[] colNames = {"Spoj","Odkud","Odj.","Kam","Přj."};
-        String[][] table;
-        
+    class ResultsTableModel implements TableModel {
 
-        
-        public ResultsTableModel(Arrival arrival){
+        String[] colNames = {"Spoj", "Odkud/Kam", "Přj.", "Odj."};
+        String[][] table;
+
+        public ResultsTableModel(Arrival arrival) {
             List<Edge> edges = Utilities.condenseEdges(arrival.asList());
-            List<String []> rows;
+            List<String[]> rows;
             rows = new LinkedList<String[]>();
-            
-            for (Edge e: edges){
-                String [] row;
+
+
+            String s=null;
+            String[] row;
+            int arr = -1;
+
+            for (Edge e : edges) {
                 row = new String[colNames.length];
                 row[1] = e.from.name;
-                row[3] = e.to.name;
-                if (e instanceof WalkEdge){
+                s = e.to.name;
+                if (arr != -1) {
+                    row[2] = Utilities.strTime(arr);
+                }
+                if (e instanceof WalkEdge) {
                     row[0] = "Přesun";
-                } else if (e instanceof ConEdge){
-                    row[0] = ((ConEdge)e).connection.name;
-                    row[2] = Utilities.strTime(((ConEdge) e).departure);
-                    row[4] = Utilities.strTime(((ConEdge) e).departure + e.length);
+                    row[3] = "("+e.length/prefs.walkSpeed+")";
+                    arr = (arr==-1)?0:arr;
+                    arr += (e.length/prefs.walkSpeed);
+                } else if (e instanceof ConEdge) {
+                    row[0] = ((ConEdge) e).connection.name/*+"("+((ConEdge)e).connection.hashCode()+")"*/;
+                    row[3] = Utilities.strTime(((ConEdge) e).departure);
+                    arr = ((ConEdge) e).departure + e.length;
                 }
                 rows.add(row);
             }
+
+            row = new String[colNames.length];
+            row[1] = s;
+            row[2] = Utilities.strTime(arr);
+            rows.add(row);
+
             table = new String[rows.size()][colNames.length];
-            for (int i=0;i<rows.size();i++){
+            for (int i = 0; i < rows.size(); i++) {
                 table[i] = rows.get(i);
             }
-            
-        
+
+
         }
-        
-        
+
         @Override
         public int getRowCount() {
             return table.length;
@@ -351,9 +376,8 @@ public class GraphicalInterface extends javax.swing.JFrame {
         public void removeTableModelListener(TableModelListener tl) {
             //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-    
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -373,7 +397,7 @@ public class GraphicalInterface extends javax.swing.JFrame {
                 gs.dateField.setText(Utilities.strDate(cal));
                 gs.setVisible(true);
                 gs.searchPanel.getRootPane().setDefaultButton(gs.vyhledatBut);
-                gs.speedSpinner.setModel(new SpinnerNumberModel(60,1,600,1));
+                gs.speedSpinner.setModel(new SpinnerNumberModel(60, 1, 600, 1));
             }
         });
     }

@@ -44,19 +44,19 @@ public class Utilities {
         return String.format("%d.%02d", time / 60, time % 60);
     }
     public static String strTime(Calendar cal){
-        return String.format("%d.%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE));
+        return new SimpleDateFormat("HH.mm").format(cal.getTime());
     }
     
     public static String strDate(Calendar cal){
-        return String.format("%d.%d.%d", cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.MONTH),cal.get(Calendar.YEAR));
-    }
-
-    public static Calendar parseDate(String str) {
-        return parseDate(str, Calendar.getInstance());
+        return new SimpleDateFormat("d.M.yyyy").format(cal.getTime());
     }
     
     public static String debugDate(Calendar cal){
         return DateFormat.getInstance().format(cal.getTime());
+    }
+
+    public static Calendar parseDate(String str) {
+        return parseDate(str, Calendar.getInstance());
     }
 
     public static Calendar parseDate(String str, Calendar cal) {

@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -28,7 +29,7 @@ public class TextInterface {
         if (prefs.from == null || prefs.to == null || prefs.when == null) {
             prefs = interactiveSearch();
         }
-        List<Arrival> found;
+        Set<Arrival> found;
         found = search.search.searchConnection(prefs);
         printConnections(found);
     
@@ -63,7 +64,7 @@ public class TextInterface {
         return Utilities.getVertexForName(st);
     }
 
-    public static void printConnections(List<Arrival> cons) {
+    public static void printConnections(Set<Arrival> cons) {
         if (cons == null) {
             System.out.println("Spojeni nenalezeno");
             return;

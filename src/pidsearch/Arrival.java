@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+
 /**
  *
  * @author jethro
@@ -30,10 +31,10 @@ public class Arrival {
         arrival = e.departure + e.length;
     }
 
-    Arrival(Arrival a, WalkEdge e) {
+    Arrival(Arrival a, WalkEdge e, SearchPreferences prefs) {
         edge = e;
         prev = a;
-        arrival = a.arrival + e.length;
+        arrival = a.arrival + (e.length/prefs.walkSpeed);
     }
 
     public List<Edge> asList() {
@@ -47,8 +48,30 @@ public class Arrival {
         }
         return list;
     }
-}
+    
 
+    @Override
+    public boolean equals(Object o){
+        if (!(o instanceof Arrival))
+            return false;
+        Arrival arr = (Arrival) o;
+        if ((!this.edge.equals(arr.edge))||!(this.arrival==arr.arrival))
+            return false;
+        if (prev == arr.prev) return true;
+        if ((prev==null)||(arr.prev==null)) return false;
+        return prev.equals(arr.prev);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 13 * hash + this.arrival;
+        hash = 13 * hash + (this.edge != null ? this.edge.hashCode() : 0);
+        hash = 13 * hash + (this.prev != null ? this.prev.hashCode() : 0);
+        return hash;
+    }
+
+}
     class ArrivalComparator implements Comparator<Arrival> {
 
         @Override

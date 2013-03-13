@@ -17,6 +17,7 @@ public class SearchPreferences {
     boolean quiet = false;
     boolean graphics = false;
     int walkSpeed = 60;
+    boolean repeat = false;
         
 }
 

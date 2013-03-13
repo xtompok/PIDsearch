@@ -99,7 +99,9 @@ public class PIDsearch {
             GraphicalInterface.main(search);
             return;
         } else {
+           do 
             TextInterface.main(search,prefs);
+           while (prefs.repeat);
         }
     }
 
@@ -168,7 +170,7 @@ public class PIDsearch {
 
             } else if (arg.equals("-q")) { // Quiet
                 prefs.quiet = true;
-            } else if (arg.equals("-t")) {
+            } else if (arg.equals("-t")) { // Time
                 if (i == args.length - 1) {
                     System.out.println("Missing argument for -t");
                     System.exit(5);
@@ -178,9 +180,13 @@ public class PIDsearch {
                 if (prefs.when==null){
                     System.exit(5);
                 }
-            } else if (arg.equals("-g")) {
+            } else if (arg.equals("-g")) { // GUI
                 prefs.graphics = true;
-            } else {
+            } else if (arg.equals("-r")) { // repeat
+                prefs.repeat = true;
+            }
+            
+            else {
                 System.out.println("Unknown argument " + args[i]);
                 System.exit(240);
             }
