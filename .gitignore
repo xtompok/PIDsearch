@@ -6,3 +6,4 @@ build/*
 *.jar
 *.war
 *.ear
+/dist/

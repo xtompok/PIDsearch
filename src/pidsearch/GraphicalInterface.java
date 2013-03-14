@@ -24,13 +24,10 @@ import javax.swing.table.TableModel;
  */
 public class GraphicalInterface extends javax.swing.JFrame {
 
-    PIDsearch search;
+    SearchConnection search;
     SearchPreferences prefs;
 
-    /**
-     * Creates new form GraphicsSearch
-     */
-    public GraphicalInterface(PIDsearch s) {
+    public GraphicalInterface(SearchConnection s) {
         search = s;
         initComponents();
     }
@@ -211,7 +208,6 @@ public class GraphicalInterface extends javax.swing.JFrame {
         boolean cancel = false;
         prefs = new SearchPreferences();
 
-        System.err.println("Clicked");
         if (!Utilities.isVertexForName(fromField.getText())) {
             fromErrorLabel.setText("Zastavka nebyla nalezena.");
             fromErrorLabel.setVisible(true);
@@ -250,10 +246,9 @@ public class GraphicalInterface extends javax.swing.JFrame {
             return;
         }
 
-        System.err.println("Searching...");
 
         Set<Arrival> cons;
-        cons = search.search.searchConnection(prefs);
+        cons = search.searchConnection(prefs);
         if (cons==null){
             errorLabel.setText("Spojeni nenalezeno");
             errorLabel.setVisible(true);
@@ -379,9 +374,9 @@ public class GraphicalInterface extends javax.swing.JFrame {
     }
 
     /**
-     * @param args the command line arguments
+     * @param search the command line arguments
      */
-    public static void main(final PIDsearch search) {
+    public static void main(final SearchConnection search) {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {

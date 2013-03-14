@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package pidsearch;
 
 import java.io.BufferedInputStream;
@@ -91,16 +88,16 @@ public class PIDsearch {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        PIDsearch search;
-        search = new PIDsearch();
+        PIDsearch pidSearch;
+        pidSearch = new PIDsearch();
         SearchPreferences prefs;
-        prefs = search.parseCommandLine(args);
+        prefs = pidSearch.parseCommandLine(args);
         if (prefs.graphics) {
-            GraphicalInterface.main(search);
+            GraphicalInterface.main(pidSearch.search);
             return;
         } else {
            do 
-            TextInterface.main(search,prefs);
+            TextInterface.main(pidSearch.search,prefs);
            while (prefs.repeat);
         }
     }

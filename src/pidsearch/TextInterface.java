@@ -18,11 +18,11 @@ import java.util.Set;
  * @author jethro
  */
 public class TextInterface {
-    static PIDsearch search;
+    static SearchConnection search;
     static SearchPreferences prefs;
 
     
-    public static void main(PIDsearch s, SearchPreferences pref){
+    public static void main(SearchConnection s, SearchPreferences pref){
         search = s;
         prefs = pref;
         
@@ -30,7 +30,7 @@ public class TextInterface {
             prefs = interactiveSearch();
         }
         Set<Arrival> found;
-        found = search.search.searchConnection(prefs);
+        found = search.searchConnection(prefs);
         printConnections(found);
     
     }
