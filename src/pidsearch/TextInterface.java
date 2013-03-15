@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package pidsearch;
 
 import java.io.BufferedReader;
@@ -13,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  *
  * @author jethro
@@ -22,6 +20,11 @@ public class TextInterface {
     static SearchPreferences prefs;
 
     
+    /**
+     *
+     * @param s
+     * @param pref
+     */
     public static void main(SearchConnection s, SearchPreferences pref){
         search = s;
         prefs = pref;
@@ -35,6 +38,10 @@ public class TextInterface {
     
     }
 
+    /**
+     *
+     * @return
+     */
     public static SearchPreferences interactiveSearch() {
         SearchPreferences prefs;
         prefs = new SearchPreferences();
@@ -46,6 +53,11 @@ public class TextInterface {
 
     }
 
+    /**
+     *
+     * @param type
+     * @return
+     */
     public static Vertex getStation(String type) {
         BufferedReader in;
         in = new BufferedReader(new InputStreamReader(System.in, Charset.forName("utf-8")));
@@ -64,6 +76,10 @@ public class TextInterface {
         return Utilities.getVertexForName(st);
     }
 
+    /**
+     *
+     * @param cons
+     */
     public static void printConnections(Set<Arrival> cons) {
         if (cons == null) {
             System.out.println("Spojeni nenalezeno");
@@ -85,11 +101,19 @@ public class TextInterface {
         }
     }
 
+    /**
+     *
+     * @param e
+     */
     public static void printConEdge(ConEdge e) {
         System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ + " " + e.from.name + "(" + Utilities.strTime(e.departure) + ") -> ");
         System.out.println(e.to.name + "(" + Utilities.strTime(e.departure + e.length) + ")");
     }
 
+    /**
+     *
+     * @param e
+     */
     public static void printWalkEdge(WalkEdge e) {
         System.out.println(e.from.name + " -> " + e.to.name + " (" + e.length + ")");
     }

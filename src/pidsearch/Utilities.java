@@ -17,8 +17,15 @@ import java.util.Map;
  * @author jethro
  */
 public class Utilities {
+    /**
+     *
+     */
     public static Map<String,Vertex> vertexForName;
     
+    /**
+     *
+     * @param vertices
+     */
     public static void genVertexForName(Vertex[] vertices){
         vertexForName = new HashMap<String, Vertex>();
         for (Vertex v : vertices) {
@@ -26,12 +33,22 @@ public class Utilities {
         }
     }
     
+    /**
+     *
+     * @param name
+     * @return
+     */
     public static Vertex getVertexForName(String name){
         if (vertexForName == null)
             throw new NullPointerException("vertexForName unitialized");
         else return vertexForName.get(name);
     }
     
+    /** Is there a station of given name?.
+     *
+     * @param name Name of the station.
+     * @return true, if there exist a station of given name, else false.
+     */
     public static boolean isVertexForName(String name){
         if (vertexForName == null)
             throw new NullPointerException("vertexForName unitialized");
@@ -39,26 +56,62 @@ public class Utilities {
     }
     
 
-    //TODO rewrite using DateFormat 
+    /** Make a string from given time.
+     *
+     * @param time time in minutes after midnight
+     * @return String in formar H.MM, where H is hour in 24-hour format and MM 
+     * is two-digit minutes number.
+     */
     public static String strTime(int time) {
         return String.format("%d.%02d", time / 60, time % 60);
     }
+    /** Make a string from given time.
+     *
+     * @param cal Calendar object with set time to show.
+     * @return String in formar H.MM, where H is hour in 24-hour format and MM 
+     * is two-digit minutes number.
+     */
     public static String strTime(Calendar cal){
         return new SimpleDateFormat("HH.mm").format(cal.getTime());
     }
     
+    /** Make a string from given date.
+     *
+     * @param cal Calendar object with set date to show.
+     * @return String in format D.M.YYYY, where D is day of month, M is number
+     * of month and YYYY is four-digit year.
+     */
     public static String strDate(Calendar cal){
         return new SimpleDateFormat("d.M.yyyy").format(cal.getTime());
     }
     
+    /** Make a string from given date and time in current locale.
+     *
+     * @param cal Calendar object with set date and time to show
+     * @return String in current locale format with given date and time.
+     */
     public static String debugDate(Calendar cal){
         return DateFormat.getInstance().format(cal.getTime());
     }
 
+    /** Parse date from string.
+     *
+     * @param str
+     * @return
+     */
     public static Calendar parseDate(String str) {
         return parseDate(str, Calendar.getInstance());
     }
 
+    /** Parse date from string.
+     * 
+     * This method only sets the specified fields in given Calendar object,
+     * other are untouched and return that object.
+     *
+     * @param str
+     * @param cal
+     * @return Modified cal.
+     */
     public static Calendar parseDate(String str, Calendar cal) {
         String[] parts;
         parts = str.split("\\.");
@@ -99,10 +152,21 @@ public class Utilities {
         return cal;
     }
 
+    /**
+     *
+     * @param str
+     * @return
+     */
     public static Calendar parseTime(String str) {
         return parseTime(str, Calendar.getInstance());
     }
 
+    /**
+     *
+     * @param str
+     * @param cal
+     * @return
+     */
     public static Calendar parseTime(String str, Calendar cal) {
         String[] parts;
         parts = str.split("\\.");
@@ -124,6 +188,11 @@ public class Utilities {
         return cal;
     }
     
+    /**
+     *
+     * @param edges
+     * @return
+     */
     public static List<Edge> condenseEdges(List<Edge> edges) {
         List<Edge> list;
         list = new LinkedList<Edge>();

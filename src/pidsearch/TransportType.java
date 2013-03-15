@@ -6,11 +6,34 @@ package pidsearch;
 
 import java.io.Serializable;
 
-/**
+/** Types of vehicles (or walk).
  *
  * @author jethro
  */
 public enum TransportType implements Serializable{
-    TRAM,BUS,METRO,BOAT,WALK,TRAIN;
+    /**
+     * Tramway.
+     */
+    TRAM,
+    /**
+     * Bus.
+     */
+    BUS,
+    /**
+     * Undeground.
+     */
+    METRO,
+    /**
+     * Ferry.
+     */
+    BOAT,
+    /**
+     * Walk.
+     */
+    WALK,
+    /**
+     * Train.
+     */
+    TRAIN;
     
 }

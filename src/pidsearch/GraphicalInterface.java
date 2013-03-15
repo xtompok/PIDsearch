@@ -18,6 +18,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+
 /**
  *
  * @author jethro
@@ -27,6 +28,10 @@ public class GraphicalInterface extends javax.swing.JFrame {
     SearchConnection search;
     SearchPreferences prefs;
 
+    /**
+     *
+     * @param s
+     */
     public GraphicalInterface(SearchConnection s) {
         search = s;
         initComponents();

@@ -16,6 +16,10 @@ import javax.swing.table.TableColumnModel;
  */
 public class ColumnResizer {
 
+    /**
+     *
+     * @param table
+     */
     public static void adjustColumnPreferredWidths(JTable table) {
         // strategy - get max width for cells in column and
         // make that the preferred width

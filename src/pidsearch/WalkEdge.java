@@ -1,20 +1,25 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package pidsearch;
 
 import java.io.Serializable;
 
-/**
+
+/** Class for representing walks between stations.
  *
  * @author jethro
  */
 public class WalkEdge extends Edge{
+    /**
+     *
+     */
     public WalkEdge(){
         type = TransportType.WALK;
     }
     
+    /**
+     *
+     * @param e
+     */
     public WalkEdge(WalkEdge.Serial e){
         super(e);
     }

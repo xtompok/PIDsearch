@@ -6,15 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 
+
 /**
  *
  * @author jethro
  */
 public class Arrival {
 
-    int arrival;
-    Edge edge;
-    Arrival prev;
+    public int arrival;
+    public Edge edge;
+    public Arrival prev;
 
     Arrival(ConEdge e) {
         edge = e;
@@ -34,6 +35,10 @@ public class Arrival {
         arrival = a.arrival + (e.length/prefs.walkSpeed);
     }
 
+    /**
+     *
+     * @return
+     */
     public List<Edge> asList() {
         Arrival a;
         a = this;
@@ -47,6 +52,11 @@ public class Arrival {
     }
     
 
+    /**
+     *
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o){
         if (!(o instanceof Arrival))
@@ -59,6 +69,10 @@ public class Arrival {
         return prev.equals(arr.prev);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public int hashCode() {
         int hash = 7;

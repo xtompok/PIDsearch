@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+
 /**
+ * Searches the connection
  *
  * @author jethro
  */
@@ -21,6 +23,13 @@ public class SearchConnection {
     ConEdge[] edges;
     WalkEdge[] walks;
 
+    /**
+     *
+     * @param vertices
+     * @param connections
+     * @param edges
+     * @param walks
+     */
     public SearchConnection(Vertex[] vertices,
             Connection[] connections,
             ConEdge[] edges,
@@ -31,6 +40,14 @@ public class SearchConnection {
         this.walks = walks;
     }
 
+    /**
+     * Searches the connection.
+     * 
+     * This methods gets the search preferences and searched a connection. 
+     *
+     * @param prefs Search preferences.
+     * @returns Set<Arrival> with found unique connections, null if nothing was found.
+     */
     public Set<Arrival> searchConnection(SearchPreferences prefs) {
         Vertex from = prefs.from;
         Vertex to = prefs.to;
@@ -91,7 +108,7 @@ public class SearchConnection {
 
             for (ConEdge e : departs) {
 
-                if (e.to.name.equals(to.name)) { //FIXME Fix in future releases
+                if (e.to.name.equals(to.name)) { 
                     found = true;
                 }
                 if (!usedVertex.get(e.to)) {
@@ -101,7 +118,7 @@ public class SearchConnection {
                         stubs.add(a);
                     }
                     usedVertex.put(e.to, Boolean.TRUE);
-                }
+                }   
 
             }
 
@@ -123,6 +140,16 @@ public class SearchConnection {
         return toFound(stubs, to);
     }
 
+    /**
+     * Finds departures from given station in given interval.
+     *
+     * @param from Station to find departures from.
+     * @param minute Minute from midnight, in which start to searching connections.
+     * @param date Calendar object with date when search connection (if it goes at that date).
+     * @param range Search departures until minute+range.
+     * @return List of ConEdges starting at from Vertex. If there are no departures in specified range,
+     * returns empty list.
+     */
     public List<ConEdge> findDepartures(Vertex from, int minute, Calendar date, int range) {
         List<ConEdge> departs;
         departs = from.departs;

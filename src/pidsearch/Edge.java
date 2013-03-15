@@ -6,18 +6,37 @@ package pidsearch;
 
 import java.io.Serializable;
 
-/**
+/** Class for representing transfer between two stations.
  *
  * @author jethro
  */
 public class Edge {
+    /**
+     * Station from which is the transfer.
+     */
     public Vertex from;
+    /**
+     * Station to which is the transfer.
+     */
     public Vertex to;
+    /**
+     * Length of the transfer.
+     */
     public int length;
+    /**
+     * Type of vehicle (or walk).
+     */
     public TransportType type;
     
+    /**
+     *
+     */
     public Edge(){}
     
+    /**
+     *
+     * @param e
+     */
     public Edge(Edge.Serial e){
         length = e.length;
         type = e.type;    

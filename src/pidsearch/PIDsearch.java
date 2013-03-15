@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.util.Calendar;
 
 
+
 /**
  *
  * @author jethro
@@ -25,6 +26,9 @@ public class PIDsearch {
     static String dataFile = "PrepareData.obj";
     SearchConnection search;
 
+    /**
+     *
+     */
     public PIDsearch() {
 
         PrepareData pd;

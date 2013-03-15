@@ -14,7 +14,13 @@ import java.util.List;
 public class DepartComparator implements Comparator<ConEdge>{
 
              
-        @Override
+        /**
+     *
+     * @param e1
+     * @param e2
+     * @return
+     */
+    @Override
         public int compare(ConEdge e1, ConEdge e2) {
             return e1.departure - e2.departure;
         }

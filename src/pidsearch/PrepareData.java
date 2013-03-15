@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.io.BufferedReader;
@@ -22,26 +18,48 @@ import java.util.Map;
 import java.util.Set;
 import pidsearch.Vertex.Serial;
 
+
 /**
  *
  * @author jethro
  */
 public class PrepareData implements Externalizable {
 
+    /**
+     *
+     */
     public static final long serialVersionUID = 14;
     static String dataDir = "data";
     static String stationsFile = "stations-utf8.dat";
     static String mapfile = "map.dat";
     static String decttFile = "pid.out";
     static String walksFile = "walks.dat";
+    /**
+     *
+     */
     public Vertex[] vertices;
+    /**
+     *
+     */
     public Connection[] connections;
+    /**
+     *
+     */
     public ConEdge[] edges;
+    /**
+     *
+     */
     public WalkEdge[] walks;
 
+    /**
+     *
+     */
     public PrepareData() {
     }
 
+    /**
+     *
+     */
     public void makeData() {
 
         Map map;
@@ -83,8 +101,10 @@ public class PrepareData implements Externalizable {
 
     }
 
+
     /**
-     * @param args the command line arguments
+     *
+     * @param args
      */
     public static void main(String[] args) {
 
@@ -211,6 +231,12 @@ public class PrepareData implements Externalizable {
         return stations;
     }
 
+    /**
+     *
+     * @param stat
+     * @param map
+     * @return
+     */
     public List<Vertex> makeVertices(List<List> stat, Map<Integer, int[]> map) {
         List<Vertex> stations;
         stations = new ArrayList();
@@ -295,6 +321,11 @@ public class PrepareData implements Externalizable {
         return walks;
     }
 
+    /**
+     *
+     * @param vertices
+     * @return
+     */
     public List<WalkEdge> makeAutoWalks(List<Vertex> vertices) {
 
         List<WalkEdge> walks;
@@ -347,6 +378,12 @@ public class PrepareData implements Externalizable {
                 + (v2.yCoord - v1.yCoord) * (v2.yCoord - v1.yCoord)));
     }
 
+    /**
+     *
+     * @param ttFile
+     * @param vertices
+     * @return
+     */
     public List loadTimeTable(String ttFile, List<Vertex> vertices) {
         List<ConEdge> edges;
         List<Connection> connections;
@@ -436,6 +473,11 @@ public class PrepareData implements Externalizable {
         return timeTable;
     }
 
+    /**
+     *
+     * @param oo
+     * @throws IOException
+     */
     @Override
     public void writeExternal(ObjectOutput oo) throws IOException {
         /* public List<Vertex> vertices;
@@ -529,6 +571,12 @@ public class PrepareData implements Externalizable {
         oo.writeObject(walkEdgeArray);
     }
 
+    /**
+     *
+     * @param oi
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     @Override
     public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         /* public List<Vertex> vertices;

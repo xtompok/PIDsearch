@@ -8,24 +8,57 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
+/** Class for representing information about connection.
+ * 
+ * Connection means one run of the transport vehicle from starting starting station
+ * to ending station.
+ * 
  *
  * @author jethro
  */
 public class Connection implements Serializable{
+    /** 
+     * Type of vehicle.
+     */
     public TransportType type;
+    /**
+     * Name of the line.
+     */
     public String name;
   
+    /**
+     * 
+     */
     public int weekMask;
+    /**
+     * Bit array with true if it goes that day.
+     * 
+     * This is bit array representing year from 1st January, which is 0 and if
+     * the connection goes that day, there is true. If the day is out of range
+     * of validity current timetable data, it is false.
+     */
     public boolean validity[];
   
+    /**
+     * Name of the comapny which operates the connection (currently unused).
+     */
     public String company;
+    /**
+     * Attributes of the connection (currently unused).
+     */
     public String attrib[];
     
+    /**
+     *
+     */
     public Connection(){
         validity = new boolean[366];
     }
     
+    /**
+     *
+     * @param valStr
+     */
     public void makeValidityBitmap(String valStr){
         String [] cols;
         cols = valStr.split(" ");
@@ -49,6 +82,11 @@ public class Connection implements Serializable{
         
     }
     
+    /**
+     *
+     * @param when
+     * @return
+     */
     public boolean goesAt(Calendar when)
     {
         if (validity[when.get(Calendar.DAY_OF_YEAR)])
