@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.text.DateFormat;
@@ -12,19 +8,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/**
+/** Uilities for searching.
  *
+ * This class is a collection of methods, whose are used across the program and 
+ * does not require context, such as parsing date. All these methods are static. 
+ * 
  * @author jethro
  */
 public class Utilities {
-    /**
-     *
-     */
-    public static Map<String,Vertex> vertexForName;
+    private static Map<String,Vertex> vertexForName;
     
-    /**
+    /** Generate Map nameOfTheStation->Vertex.
+     * 
+     * This methods gets the array of vertices and creates a Map, where keys are
+     * names of the vertices and values are Vertex objects with that name. If there
+     * are more objects with same name, one of them is chosen. This method must
+     * be called before {@link pidsearch.Utilities#getVertexForName(java.lang.String)  getVertexForName}
+     * or {@link pidsearch.Utilities#isVertexForName(java.lang.String) isVertexForName}
+     * is called.
      *
-     * @param vertices
+     * @param vertices Array of vertices to create Map from.
      */
     public static void genVertexForName(Vertex[] vertices){
         vertexForName = new HashMap<String, Vertex>();
@@ -33,10 +36,11 @@ public class Utilities {
         }
     }
     
-    /**
+    /** Gets Vertex with given name.
      *
-     * @param name
-     * @return
+     * @param name Name of the station.
+     * @return Vertex for the given name or null if it doesn't exists.
+     * @see pidsearch.Utilities#genVertexForName(pidsearch.Vertex[]) 
      */
     public static Vertex getVertexForName(String name){
         if (vertexForName == null)
@@ -48,6 +52,7 @@ public class Utilities {
      *
      * @param name Name of the station.
      * @return true, if there exist a station of given name, else false.
+     * @see pidsearch.Utilities#genVertexForName(pidsearch.Vertex[]) 
      */
     public static boolean isVertexForName(String name){
         if (vertexForName == null)
@@ -95,9 +100,14 @@ public class Utilities {
     }
 
     /** Parse date from string.
+     * 
+     * This method parses date from given string and creates a new Calendar object 
+     * with set date. Time and other fields in that object are set to current value.
      *
-     * @param str
-     * @return
+     * @param str Date string in format DD[.MM[.YYYY]], where DD is day, MM is month
+     * and YYYY is year. If MM or YYYY is omitted, it is set to current.
+     * @return Calendar object with set date or null uf there was a problem while
+     * parsing date.
      */
     public static Calendar parseDate(String str) {
         return parseDate(str, Calendar.getInstance());
@@ -105,12 +115,13 @@ public class Utilities {
 
     /** Parse date from string.
      * 
-     * This method only sets the specified fields in given Calendar object,
-     * other are untouched and return that object.
+     * This method parses date from string and sets the specified fields in given
+     * Calendar object, others are untouched and return that object.
      *
-     * @param str
-     * @param cal
-     * @return Modified cal.
+     * @param str Date string in format DD[.MM[.YYYY]], where DD is day, MM is month
+     * and YYYY is year. If MM or YYYY is omitted, it stays untouched. 
+     * @param cal Calendar object to modify.
+     * @return Modified cal or null if there was a problem while parsing date.
      */
     public static Calendar parseDate(String str, Calendar cal) {
         String[] parts;
@@ -126,6 +137,8 @@ public class Utilities {
             try {
                 day = Integer.parseInt(parts[0]);
             } catch (NumberFormatException e) {
+                System.out.println("Wrong date " + str);
+                return null;
             }
         }
         if (parts.length > 1) {
@@ -152,20 +165,30 @@ public class Utilities {
         return cal;
     }
 
-    /**
+    /** Parse time from string.
      *
-     * @param str
-     * @return
+     * This method parses time from string and makes a Calendar object with set 
+     * time. Others values stays untouched.
+     * 
+     * @param str String in format HH.MM, where HH is hour in 24-hour day and MM
+     * are minutes. 
+     * @return Calendar object with set time or null if there was a problem while
+     * parsing time.
      */
     public static Calendar parseTime(String str) {
         return parseTime(str, Calendar.getInstance());
     }
 
-    /**
+    /** Parse time from string.
      *
-     * @param str
-     * @param cal
-     * @return
+     * This method parses time from string and modifies time in given Calendar
+     * object. Others values stays untouched.
+     * 
+     * @param str String in format HH.MM, where HH is hour in 24-hour day and MM
+     * are minutes.
+     * @param cal Calendar object to modify.
+     * @return Modified Calendar object with set time or null if there was 
+     * a problem while parsing time.
      */
     public static Calendar parseTime(String str, Calendar cal) {
         String[] parts;
@@ -188,10 +211,16 @@ public class Utilities {
         return cal;
     }
     
-    /**
+    /** Merge sequence of edges of one connection to one edge.
+     * 
+     * This method is designed to simplify connection before it is showed to 
+     * the user. If one Connection is used for more stations, it is showed as
+     * more sequential edges. This method takes theese edges and merges them 
+     * into one edge. On the output there aren't two walk edges in sequence or 
+     * two ConEdges which belongs to the same Connection in sequence.
      *
-     * @param edges
-     * @return
+     * @param edges List of edges of one found connection
+     * @return Simplified List of edges of the found connection
      */
     public static List<Edge> condenseEdges(List<Edge> edges) {
         List<Edge> list;
