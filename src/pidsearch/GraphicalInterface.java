@@ -12,14 +12,12 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 
-/**
+/** Graphical interface for searching a connection.
  *
  * @author jethro
  */

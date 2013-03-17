@@ -12,6 +12,10 @@ import java.util.Set;
 
 
 /** Text interface for searching a connection.
+ * 
+ * This class provides a text interface for searching connections. All methods of
+ * this class are static, no instance is created. It has methods for interactive 
+ * search and for printing found connections out.
  *
  * @author jethro
  */
@@ -20,43 +24,52 @@ public class TextInterface {
     static SearchPreferences prefs;
 
     
-    /**
+    /** Run text interface.
+     * 
+     * This method checks, if from, to and when attribute of SearchPreferences is
+     * defined and if not, runs interactive search. Then searches the connection
+     * and prints out found connections.
      *
-     * @param s
-     * @param pref
+     * @param srch Initialized search object.
+     * @param pref Search preferences filled with command line attributes.
      */
-    public static void main(SearchConnection s, SearchPreferences pref){
-        search = s;
+    public static void main(SearchConnection srch, SearchPreferences pref){
+        search = srch;
         prefs = pref;
         
         if (prefs.from == null || prefs.to == null || prefs.when == null) {
             prefs = interactiveSearch();
         }
-        Set<Arrival> found;
-        found = search.searchConnection(prefs);
-        printConnections(found);
+
+        printConnections(search.searchConnection(prefs));
     
     }
 
-    /**
-     *
-     * @return
+    /** Get search parameters interactively.
+     * 
+     * Interactively asks for name of from station, to station and sets date and
+     * time to current date and time.
+     * 
+     * @return SearchPreferences with filled from, to and date.
      */
     public static SearchPreferences interactiveSearch() {
         SearchPreferences prefs;
         prefs = new SearchPreferences();
         prefs.from = getStation("vychozi");
         prefs.to = getStation("cilove");
-        Calendar cal;
         prefs.when = Calendar.getInstance();
         return prefs;
 
     }
 
-    /**
+    /** Interactively get station.
+     * 
+     * This method asks for name of the station, until it gets valid name of Vertex.
      *
-     * @param type
-     * @return
+     * @see pidsearch.Utilities#isVertexForName isVertexForName
+     * @param type String in czech describing type of the station, will be inserted
+     * in sentece "Zadejte jmeno" + {@code type} + "stanice:"
+     * @return Vertex with name of given station.
      */
     public static Vertex getStation(String type) {
         BufferedReader in;
@@ -76,9 +89,19 @@ public class TextInterface {
         return Utilities.getVertexForName(st);
     }
 
-    /**
-     *
-     * @param cons
+    /** Print found connections.
+     * 
+     * This method gets set of found connections, 
+     * {@link pidsearch.Utilities#condenseEdges condense} them and prints them to 
+     * the standard output. For each edge uses 
+     * {@link pidsearch.TextInterface#printConEdge printConEdge} respectively
+     * {@link pidsearch.TextInterface#printWalkEdge printWalkEdge} for 
+     * {@link pidsearch.ConEdge ConEdge} respectively 
+     * {@link pidsearch.WalkEdge WalkEdge}.
+     * 
+     * If the connection was not found, prints {@code Spojeni nenalezeno}
+     * 
+     * @param cons Set of found connections.
      */
     public static void printConnections(Set<Arrival> cons) {
         if (cons == null) {
@@ -101,20 +124,24 @@ public class TextInterface {
         }
     }
 
-    /**
+    /** Print ConEdge to standard output.
+     * 
+     * Format: {@code from (departure) -> to (arrival) }
      *
-     * @param e
+     * @param edge Edge to print.
      */
-    public static void printConEdge(ConEdge e) {
-        System.out.print(e.connection.name /*+ "("+e.connection.hashCode()+")"*/ + " " + e.from.name + "(" + Utilities.strTime(e.departure) + ") -> ");
-        System.out.println(e.to.name + "(" + Utilities.strTime(e.departure + e.length) + ")");
+    public static void printConEdge(ConEdge edge) {
+        System.out.print(edge.connection.name  + " " + edge.from.name + "(" + Utilities.strTime(edge.departure) + ") -> ");
+        System.out.println(edge.to.name + "(" + Utilities.strTime(edge.departure + edge.length) + ")");
     }
 
-    /**
+    /** Print WalkEdge to standard output.
      *
-     * @param e
+     * Format: {@code from -> to (length)}
+     * 
+     * @param edge Edge to print.
      */
-    public static void printWalkEdge(WalkEdge e) {
-        System.out.println(e.from.name + " -> " + e.to.name + " (" + e.length + ")");
+    public static void printWalkEdge(WalkEdge edge) {
+        System.out.println(edge.from.name + " -> " + edge.to.name + " (" + edge.length + ")");
     }
 }
