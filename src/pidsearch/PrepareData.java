@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,8 +17,12 @@ import java.util.Map;
 import java.util.Set;
 import pidsearch.Vertex.Serial;
 
-/**
+/** Class for preparing, saving and loading graph objects.
  *
+ * This class is used for parsing original files and creating a persistent object,
+ * where all information about vertices, edges and connections are saved. If called
+ * independently, generates list of stations and walk edges.
+ * 
  * @author jethro
  */
 public class PrepareData implements Externalizable {
@@ -123,6 +126,12 @@ public class PrepareData implements Externalizable {
 
 	/**
 	 * Main method, print stations and walks.
+	 * 
+	 * If this class is called as a main class, list of station is printed 
+	 * with lines going from each station. Also is printed a list of walk 
+	 * edges.
+	 * Format: {@code name (id): l1, l2, } for stations, 
+	 * {@code from -> to length} for walk edges.
 	 *
 	 * @param args Arguments from command line, ignored.
 	 */
@@ -130,16 +139,6 @@ public class PrepareData implements Externalizable {
 
 		PrepareData pd = new PrepareData();
 		pd.makeData();
-		// System.out.println(pd.verticesList.size() + " vertices, " + pd.edgesList.size() + " edges");
-        /* for (int i=0;i<100;i++){
-		 Edge e;
-		 e = pd.edges.get(i);
-		 System.out.println(pd.connections.get(e.conection).name);
-		 System.out.println(pd.vertices.get(e.from).name);
-		 System.out.println(pd.vertices.get(e.to).name);
-		 System.out.println(e.length);
-		 System.out.println();
-		 }*/
 		class Station {
 
 			int id;
@@ -167,20 +166,8 @@ public class PrepareData implements Externalizable {
 			for (ConEdge e : v.departs) {
 				s.lines.add(e.connection.name);
 			}
-			//    System.out.println(s.toString());
+			System.out.println(s.toString());
 		}
-		/*
-
-		 Vertex v = pd.vertices[3334];
-		 System.out.println(v.name);
-		 for (ConEdge e : v.departs) {
-		 int dep = e.departure;
-		 int h = dep / 60;
-		 int m = dep % 60;
-		 String to = e.to.name;
-		 String spoj = e.connection.name;
-		 System.out.println(h + "." + m + " -> " + spoj + ":" + to);
-		 }*/
 		for (WalkEdge w : pd.walks) {
 			System.out.print(w.from.name);
 			System.out.print("->");
@@ -191,6 +178,17 @@ public class PrepareData implements Externalizable {
 
 	}
 
+	/** Load the map from file.
+	 * 
+	 * This method loads positions of stations from given file. Every line
+	 * describes one station.
+	 * Format: {@code x y mapId}, where x and y are x and y coordinate of station
+	 * with id mapId in S-42.
+	 * 
+	 * @param mapFile Path to map file.
+	 * @return Map, where key is an mapId of station and value is array of [x,y]
+	 * coordinates of station in S-42.
+	 */
 	private Map<Integer, int[]> loadMap(String mapFile) {
 		Map<Integer, int[]> records;
 		records = new HashMap();
@@ -221,6 +219,16 @@ public class PrepareData implements Externalizable {
 		return records;
 	}
 
+	/** Load stations from file.
+	 * 
+	 * This method loads stations from given file. Format of the file is a 
+	 * space separated values, where in first column is an mapID of the station
+	 * and sixth is the name of the station. Other columns were not decoded yet.
+	 * 
+	 * @param stationsFile Path to the file with stations.
+	 * @return List of List, where inner List represents one station. First
+	 * member of the inner List is station's name and second is its mapID.
+	 */
 	private List<List> loadStations(String stationsFile) {
 		List stations;
 		stations = new LinkedList();
@@ -252,13 +260,15 @@ public class PrepareData implements Externalizable {
 		return stations;
 	}
 
-	/**
-	 *
-	 * @param stat
-	 * @param map
-	 * @return
-	 */
-	public List<Vertex> makeVertices(List<List> stat, Map<Integer, int[]> map) {
+	/** Make from list of stations and map vertices.
+	 * This method "merges" information from map file and from stations file
+	 * and makes a vertices from them.
+	 * 
+	 * @param stat Output of {@link pidsearch.PrepareData#loadStations loadStations}
+	 * @param map Output of {@link pidsearch.PrepareData#loadMap loadMap}
+	 * @return List of vertices.
+	 */ 
+	private List<Vertex> makeVertices(List<List> stat, Map<Integer, int[]> map) {
 		List<Vertex> stations;
 		stations = new ArrayList();
 		for (List s : (List<List>) stat) {
@@ -277,6 +287,18 @@ public class PrepareData implements Externalizable {
 		return stations;
 	}
 
+	/** Load walks from file.
+	 * 
+	 * This method loads user-defined wlaks from given file. 
+	 * Format:{@code from to [len]}, where from and to are ids of stations
+	 * between whose is the walk edge and len is length in minutes while going
+	 * 1ms^-1. If the length is not set, it is calculated as an eucleindan 
+	 * distance between stations.
+	 * 
+	 * @param walksFile Path to the file containing walks.
+	 * @param vertices List of all vertices.
+	 * @return List of Walk edges of loaded walks.
+	 */
 	private List<WalkEdge> loadWalks(String walksFile, List<Vertex> vertices) {
 		List<WalkEdge> walks;
 		walks = new LinkedList<WalkEdge>();
@@ -300,7 +322,7 @@ public class PrepareData implements Externalizable {
 					int toIndex = Integer.parseInt(cols[1]);
 					int len;
 					if (cols.length == 3) {
-						len = Integer.parseInt(cols[2]);
+						len = Integer.parseInt(cols[2])*60;
 					} else {
 						len = distance(vertices.get(fromIndex), vertices.get(toIndex));
 					}
@@ -342,10 +364,14 @@ public class PrepareData implements Externalizable {
 		return walks;
 	}
 
-	/**
+	/** Make automatic walks.
+	 * 
+	 * This method takes the vertices and calculates walk edges between
+	 * stations with same name. The distance is caluculated using 
+	 * {@link pidsearch.PerpareData#distance distance} method. 
 	 *
-	 * @param vertices
-	 * @return
+	 * @param vertices List of all vertices.
+	 * @return List of Walk edges with generated walks.
 	 */
 	public List<WalkEdge> makeAutoWalks(List<Vertex> vertices) {
 
@@ -393,17 +419,31 @@ public class PrepareData implements Externalizable {
 
 		return walks;
 	}
-
+	
+	/** Calculate distance between two vertices.
+	 * 
+	 * Because S-42 is the carthesian coordinate system and the coordinates 
+	 * are in meters, distance could be computed from Pythagorean theorem.
+	 * 
+	 * @param v1 First Vertex
+	 * @param v2 Second Vertex.
+	 * @return Distance between vertices in meters.
+	 */
 	private int distance(Vertex v1, Vertex v2) {
 		return (int) (Math.sqrt((v2.xCoord - v1.xCoord) * (v2.xCoord - v1.xCoord)
 			+ (v2.yCoord - v1.yCoord) * (v2.yCoord - v1.yCoord)));
 	}
 
-	/**
+	/** Loads timetable from file.
+	 * 
+	 * This method loads timetable data from given file. Format of the file
+	 * is quite weird, for understanding, look on the timetable file and on 
+	 * the source code of this method.
 	 *
-	 * @param ttFile
-	 * @param vertices
-	 * @return
+	 * @param ttFile Path of file containing timetable.
+	 * @param vertices List of all vertices.
+	 * @return List with two items, first is list of Connections and second
+	 * is list of ConEdges from timetable.
 	 */
 	public List loadTimeTable(String ttFile, List<Vertex> vertices) {
 		List<ConEdge> edges;
@@ -423,11 +463,6 @@ public class PrepareData implements Externalizable {
 		Connection con;
 		con = null;
 
-		int conID;
-		conID = -1;
-		int edgeID;
-		edgeID = -1;
-
 		int memStat;
 		int memTime;
 		memStat = -1;
@@ -446,7 +481,6 @@ public class PrepareData implements Externalizable {
 					lineName = line.split(" ")[1];
 					con = new Connection();
 					connections.add(con);
-					conID++;
 					con.name = lineName;
 					memStat = -1;
 					memTime = -1;
@@ -468,7 +502,6 @@ public class PrepareData implements Externalizable {
 						e.from = vertices.get(memStat);
 						e.to = vertices.get(stat);
 						edges.add(e);
-						edgeID++;
 						vertices.get(memStat).departs.add(e);
 
 					}
@@ -494,10 +527,17 @@ public class PrepareData implements Externalizable {
 		return timeTable;
 	}
 
-	/**
+	/** Custom serializer.
+	 * 
+	 * Because of saving data space and for faster loading, custom serialization
+	 * is used. When serializing vertices and edges, specialized Serial subclasses
+	 * are used, where referrences are replaced by indexes into arrays. This makes
+	 * saving and loading faster and stack size does not have to be increased.
+	 * In the future, ConEdges will be placed into the Connection objects for 
+	 * faster loading and saving space.
 	 *
-	 * @param oo
-	 * @throws IOException
+	 * @param oo ObjectOutput to write to.
+	 * @throws IOException if error occured.
 	 */
 	@Override
 	public void writeExternal(ObjectOutput oo) throws IOException {
@@ -592,11 +632,14 @@ public class PrepareData implements Externalizable {
 		oo.writeObject(walkEdgeArray);
 	}
 
-	/**
-	 *
-	 * @param oi
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	/** Custom deserialization.
+	 * 
+	 * Loads objects from disk and reconstruct original structures. 
+	 * 
+	 * @see pidsearch.PrepareData#writeExternal writeExternal
+	 * @param oi Input to read objects from.
+	 * @throws IOException if error while reading occured.
+	 * @throws ClassNotFoundException if deserialized class does not exist.
 	 */
 	@Override
 	public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
