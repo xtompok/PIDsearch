@@ -1,4 +1,3 @@
-
 package pidsearch;
 
 import java.util.Calendar;
@@ -11,8 +10,9 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 
-/**
- * Searches the connection
+/** Searches the connection.
+ * 
+ * This class provides the main application logic -- searching the connection. 
  *
  * @author jethro
  */
@@ -23,12 +23,16 @@ public class SearchConnection {
     ConEdge[] edges;
     WalkEdge[] walks;
 
-    /**
-     *
-     * @param vertices
-     * @param connections
-     * @param edges
-     * @param walks
+    /** Make a searching object.
+     * 
+     * This method gets as parametrs objects describing the timetable and a graph
+     * of the connections and makes an object for searching connection. Referrences
+     * between objects must be already defined when creating a search object.
+     * 
+     * @param vertices Array of vertices in graph
+     * @param connections Array of connections
+     * @param edges Array of ConEdges
+     * @param walks Array of WalkEdges
      */
     public SearchConnection(Vertex[] vertices,
             Connection[] connections,
@@ -46,8 +50,7 @@ public class SearchConnection {
      * This methods gets the search preferences and searched a connection. 
      *
      * @param prefs Search preferences.
-     * @return 
-     * @returns Set<Arrival> with found unique connections, null if nothing was found.
+     * @return Set&lt Arrival&gt with found unique connections, null if nothing was found.
      */
     public Set<Arrival> searchConnection(SearchPreferences prefs) {
         Vertex from = prefs.from;
@@ -183,7 +186,19 @@ public class SearchConnection {
         }
         return departEdges;
     }
-
+    
+    /** Convert PriorityQueue from searching a connection to Set of Arrivals.
+     * 
+     * This method gets the PriorityQueue from searching the connection as it 
+     * was while connection was found and then selects Arrival objects, whose
+     * last edge goes to the station with same name as searches. Theese arrival
+     * objects are inserted into the Set, which is returned, so every item in
+     * the set represents one found connection.
+     * 
+     * @param stubs Priority queue from searching a connection
+     * @param to Vertex with the name of the final station.
+     * @return Set of Arrivals, whose ends in the final station.
+     */
     private Set<Arrival> toFound(PriorityQueue<Arrival> stubs, Vertex to) {
         Set<Arrival> found;
         found = new HashSet<Arrival>();

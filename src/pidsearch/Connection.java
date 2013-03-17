@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.io.Serializable;
@@ -12,7 +8,6 @@ import java.util.Date;
  * 
  * Connection means one run of the transport vehicle from starting starting station
  * to ending station.
- * 
  *
  * @author jethro
  */
@@ -26,10 +21,6 @@ public class Connection implements Serializable{
      */
     public String name;
   
-    /**
-     * 
-     */
-    public int weekMask;
     /**
      * Bit array with true if it goes that day.
      * 
@@ -48,18 +39,29 @@ public class Connection implements Serializable{
      */
     public String attrib[];
     
-    /**
+    /** Make a new empty connection.
      *
      */
     public Connection(){
         validity = new boolean[366];
     }
     
-    /**
-     *
-     * @param valStr
+    /** Generate a validity bitmap from given string.
+     * 
+     * This method takes the String in given format, calculates from it the 
+     * bitmap of validity and sets the validity attribute. This method must be
+     * called before {@link pidsearch.Connection#goesAt goesAt} is called.
+     * 
+     * @param valStr String in format {@code stamp days wc1:wm1 wc2:wm2 ...} where
+     * <ul>
+     * <li>{@code stamp} is timestamp of beginning of validity the timetable</li>
+     * <li>{@code days} is number of days, when connection is valid</li>
+     * <li>{@code wcn:wmn} week count : week mask, where week count is number 
+     * of weeks, when is week mask valid and week mask has 1 on days of week,
+     * when connection is valid</li>
+     * </ul>
      */
-    public void makeValidityBitmap(String valStr){
+    public void genValidityBitmap(String valStr){
         String [] cols;
         cols = valStr.split(" ");
         Calendar cal;
@@ -77,15 +79,16 @@ public class Connection implements Serializable{
                     this.validity[start+j]=true;
             }
             start+=weeks*7;
-            this.weekMask = weekMask;
         }
         
     }
     
-    /**
-     *
-     * @param when
-     * @return
+    /** Goes the connection at specified day?.
+     * 
+     * @see pidsearch.Connection#genValidityBitmap genValidityBitmap
+     * 
+     * @param when Calendar object with set date
+     * @return true, if connection goes at specified date, false otherwise.
      */
     public boolean goesAt(Calendar when)
     {

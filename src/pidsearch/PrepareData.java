@@ -29,11 +29,26 @@ public class PrepareData implements Externalizable {
      *
      */
     public static final long serialVersionUID = 14;
-    static String dataDir = "data";
-    static String stationsFile = "stations-utf8.dat";
-    static String mapfile = "map.dat";
-    static String decttFile = "pid.out";
-    static String walksFile = "walks.dat";
+    	/**
+	 *
+	 */
+	public static String dataDir = "data";
+    	/**
+	 *
+	 */
+	public static String stationsFile = "stations-utf8.dat";
+    	/**
+	 *
+	 */
+	public static String mapfile = "map.dat";
+    	/**
+	 *
+	 */
+	public static String decttFile = "pid.out";
+    	/**
+	 *
+	 */
+	public static String walksFile = "walks.dat";
     /**
      *
      */
@@ -51,14 +66,18 @@ public class PrepareData implements Externalizable {
      */
     public WalkEdge[] walks;
 
-    /**
-     *
+    /** Create an empty PrepareData object.
+     * 
+     * @see pidsearch.PrepareData#makeData
      */
     public PrepareData() {
     }
 
-    /**
-     *
+    /** Fill object with data.
+     * 
+     * This method parses the data files and generates new graph of connections.
+     * This could consume large amount of memory and time, consider saving this
+     * object after generating. 
      */
     public void makeData() {
 
@@ -102,9 +121,9 @@ public class PrepareData implements Externalizable {
     }
 
 
-    /**
+    /** Main method, print stations and walks.
      *
-     * @param args
+     * @param args Arguments from command line, ignored.
      */
     public static void main(String[] args) {
 
@@ -431,7 +450,7 @@ public class PrepareData implements Externalizable {
                     memTime = -1;
                 }
                 if (line.charAt(0) == 'D') {
-                    con.makeValidityBitmap(line.substring(2));
+                    con.genValidityBitmap(line.substring(2));
                 }
                 if (line.charAt(0) == '\t') {
                     String[] cols;
