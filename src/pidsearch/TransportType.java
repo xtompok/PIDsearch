@@ -1,13 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.io.Serializable;
 
 /** Types of vehicles (or walk).
- *
+ * 
+ * This enum lists all type of transport, what can be used in connection.  
+ * 
  * @author jethro
  */
 public enum TransportType implements Serializable{

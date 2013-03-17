@@ -5,22 +5,21 @@ import java.io.Serializable;
 
 
 /** Class for representing walks between stations.
+ * 
+ * Attribute {@link pidsearch.Edge#lenght lenght} means distance in meters between
+ * the stations. This is because variable walk speed could be set.
  *
  * @author jethro
  */
 public class WalkEdge extends Edge{
-    /**
+    /** Make a new WalkEdge with type set to walk.
      *
      */
     public WalkEdge(){
         type = TransportType.WALK;
     }
     
-    /**
-     *
-     * @param e
-     */
-    public WalkEdge(WalkEdge.Serial e){
+    WalkEdge(WalkEdge.Serial e){
         super(e);
     }
     

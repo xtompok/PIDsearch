@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.io.Serializable;
@@ -39,7 +35,7 @@ public class Vertex{
      */
     public int yCoord;
     
-    /**
+    /** Make new vertex.
      *
      */
     public Vertex(){
@@ -47,11 +43,7 @@ public class Vertex{
         walks = new LinkedList<WalkEdge>();
     }
     
-    /**
-     *
-     * @param v
-     */
-    public Vertex(Vertex.Serial v){
+    Vertex(Vertex.Serial v){
             name = v.name;
             attrib = v.attrib;
             xCoord = v.xCoord;

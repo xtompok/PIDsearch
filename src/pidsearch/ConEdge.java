@@ -6,7 +6,13 @@ package pidsearch;
 
 import java.io.Serializable;
 
-/** Class for representing one transfer between two stations by public transport
+/** Class for representing one connection edge.
+ *  
+ * This class represents connection edges, which is one transfer between two 
+ * stations by public transport.
+ * 
+ * attribute {@link pidsearch.Edge#lenght lenght} means length of transport in 
+ * minutes.
  *
  * @author jethro
  */
@@ -21,18 +27,14 @@ public class ConEdge extends Edge{
      */
     public Connection connection;
     
-    /**
+    /** Make new ConEdge with type set to BUS.
      *
      */
     public ConEdge(){
         this.type = TransportType.BUS;
     }
     
-    /**
-     *
-     * @param e
-     */
-    public ConEdge(ConEdge.Serial e){
+    ConEdge(ConEdge.Serial e){
         super(e);
         departure = e.departure;
     }

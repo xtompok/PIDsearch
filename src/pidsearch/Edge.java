@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.io.Serializable;
@@ -28,16 +24,13 @@ public class Edge {
      */
     public TransportType type;
     
-    /**
+    /** Make a new edge.
      *
      */
     public Edge(){}
     
-    /**
-     *
-     * @param e
-     */
-    public Edge(Edge.Serial e){
+
+    Edge(Edge.Serial e){
         length = e.length;
         type = e.type;    
     }

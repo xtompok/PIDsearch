@@ -46,6 +46,7 @@ public class SearchConnection {
      * This methods gets the search preferences and searched a connection. 
      *
      * @param prefs Search preferences.
+     * @return 
      * @returns Set<Arrival> with found unique connections, null if nothing was found.
      */
     public Set<Arrival> searchConnection(SearchPreferences prefs) {
