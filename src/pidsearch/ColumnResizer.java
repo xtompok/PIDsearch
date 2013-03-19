@@ -10,15 +10,18 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-/**
- *
- * @author jethro
+/** Class for resize column width in JTable.
+ * 
+ * @author vanadium
  */
 public class ColumnResizer {
 
-    /**
-     *
-     * @param table
+    /** Adjust width of columns in JTable.
+     * 
+     * This method adjusts column width according to the content of column. 
+     * 
+     * @see <a href="http://codeidol.com/java/swing/Tables-and-Trees/Size-Your-Columns-to-Suit-Your-JTables-Contents/">Copied from here</a>
+     * @param table JTable to adjust.
      */
     public static void adjustColumnPreferredWidths(JTable table) {
         // strategy - get max width for cells in column and

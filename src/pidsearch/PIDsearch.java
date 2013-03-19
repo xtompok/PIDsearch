@@ -10,21 +10,45 @@ import java.io.ObjectOutputStream;
 import java.util.Calendar;
 
 
-/**
+/** Main class of the project.
+ * 
+ * This class contains main method, and provides parsing command line arguments
+ * and loading the timetable from file.
  *
  * @author jethro
  */
 public class PIDsearch {
 
-    //Map<String, Vertex> vertexForName;
-    Vertex[] vertices;
-    Connection[] connections;
-    ConEdge[] edges;
-    WalkEdge[] walks;
-    static String dataFile = "PrepareData.obj";
-    SearchConnection search;
+    	/**
+	 * Array of vertices.
+	 */
+	public Vertex[] vertices;
+    	/**
+	 * Array of connections.
+	 */
+	public Connection[] connections;
+    	/**
+	 * Array of connection edges.
+	 */
+	public ConEdge[] edges;
+    	/**
+	 * Array of walk edges.
+	 */
+	public WalkEdge[] walks;
+    	/** 
+	 * Filename of persistent PrepareData object.
+	 */
+	public static String dataFile = "PrepareData.obj";
+    	/**
+	 * Object for searching connection.
+	 */
+	public SearchConnection search;
 
-    /**
+    /** Load data and prepare for searching.
+     * 
+     * This method loads timetable data form persistent object or makes them from
+     * the data files, if object is not available. SearchConnection object is also
+     * created.
      *
      */
     public PIDsearch() {
@@ -86,28 +110,83 @@ public class PIDsearch {
 
     }
 
-    /**
+    /** Main method.
+     * 
+     * This method parses the command line arguments, prepares everything for 
+     * searching and then runs graphical or command line searching interface.
+     * 
+     * @see pidsearch.PIDsearch#parseCommandLine
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args){
+	SearchPreferences prefs;
+        prefs = PIDsearch.parseCommandLine(args);
         PIDsearch pidSearch;
         pidSearch = new PIDsearch();
-        SearchPreferences prefs;
-        prefs = pidSearch.parseCommandLine(args);
+        
         if (prefs.graphics) {
             GraphicalInterface.main(pidSearch.search);
-            return;
         } else {
-           do 
+           do {
             TextInterface.main(pidSearch.search,prefs);
+	    prefs = new SearchPreferences();
+	   }
            while (prefs.repeat);
         }
     }
 
     
 
-    SearchPreferences parseCommandLine(String[] args) {
-        // -f -t -d -D -q -t
+    	/** Parse commad line arguments.
+	 *
+	 * This method gets the command line arguments and parses them. 
+	 * Available arguments:
+	 * <ul>
+	 * <li> 
+	 *	{@code -f FROM}<br />
+	 *	Name of the station to search connection from.
+	 * </li>
+	 * <li> 
+	 *	{@code -t TO}<br />
+	 *	Name of the station to search conection to.
+	 * </li>
+	 * <li> 
+	 *	{@code -D DD[.MM[.YYYY]]}<br />
+	 *	Date for searching connection {@link pidsearch.Utilities#parseDate}.
+	 * </li>
+	 * <li> 
+	 *	{@code -d TIMESTAMP}<br />
+	 *	Unix timestamp set to date and time when search connection.
+	 * </li>
+	 * <li> 
+	 *	{@code -T HH.MM}<br />
+	 *	Time for searchin a connection {@link pidsearch.Utilities#parseTime}.
+	 * </li><!--
+	 * <li> 
+	 *	{@code -q}<br />
+	 *	Be not so verbose.
+	 * </li>!-->	 
+	 * <li> 
+	 *	{@code -g}<br />
+	 *	Search connection in GUI. All other parameters from command line
+	 *	are ignored.
+	 * </li>	 
+	 * <li> 
+	 *	{@code -r}<br />
+	 *	Make repeated searches from command line. First search looks on 
+	 *	command line parameters, next searches are interactive.
+	 * </li><!-->	 
+	 * <li> 
+	 *	{@code -}<br />
+	 * 
+	 * </li></!-->
+	 * 
+	 * </ul>
+	 * 
+	 * @param args arguments from command line.
+	 * @return SearchPreferences object with set values from command line.
+	 */
+	public static SearchPreferences parseCommandLine(String[] args) {
         int i = 0;
         String arg;
    
@@ -141,9 +220,9 @@ public class PIDsearch {
                     System.out.println("Can't find station " + args[i]);
                     System.exit(1);
                 }
-            } else if (arg.equals("-d")) { // Date DD.MM.YYYY
+            } else if (arg.equals("-D")) { // Date DD.MM.YYYY
                 if (i == args.length - 1) {
-                    System.out.println("Missing argument for -d");
+                    System.out.println("Missing argument for -D");
                     System.exit(3);
                 }
                 i++;
@@ -152,9 +231,9 @@ public class PIDsearch {
                     System.exit(3);
                 }
 
-            } else if (arg.equals("-D")) { // Timestamp
+            } else if (arg.equals("-d")) { // Timestamp
                 if (i == args.length - 1) {
-                    System.out.println("Missing argument for -D");
+                    System.out.println("Missing argument for -d");
                     System.exit(4);
                 }
                 i++;
@@ -169,9 +248,9 @@ public class PIDsearch {
 
             } else if (arg.equals("-q")) { // Quiet
                 prefs.quiet = true;
-            } else if (arg.equals("-t")) { // Time
+            } else if (arg.equals("-T")) { // Time
                 if (i == args.length - 1) {
-                    System.out.println("Missing argument for -t");
+                    System.out.println("Missing argument for -T");
                     System.exit(5);
                 }
                 i++;
