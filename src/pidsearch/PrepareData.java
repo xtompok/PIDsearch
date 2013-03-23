@@ -38,7 +38,7 @@ public class PrepareData implements Externalizable {
 	/**
 	 * Filename of file containing stations definitions.
 	 */
-	public static String stationsFile = "stations-utf8.dat";
+	public static String stationsFile = "stations.dat";
 	/**
 	 * Filename of file containing map positions of stations.
 	 */
@@ -368,7 +368,7 @@ public class PrepareData implements Externalizable {
 	 * 
 	 * This method takes the vertices and calculates walk edges between
 	 * stations with same name. The distance is caluculated using 
-	 * {@link pidsearch.PerpareData#distance distance} method. 
+	 * {@link pidsearch.PrepareData#distance distance} method. 
 	 *
 	 * @param vertices List of all vertices.
 	 * @return List of Walk edges with generated walks.

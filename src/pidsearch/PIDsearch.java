@@ -119,19 +119,20 @@ public class PIDsearch {
      * @param args the command line arguments
      */
     public static void main(String[] args){
+	PIDsearch pidSearch;
+        pidSearch = new PIDsearch();
 	SearchPreferences prefs;
         prefs = PIDsearch.parseCommandLine(args);
-        PIDsearch pidSearch;
-        pidSearch = new PIDsearch();
         
         if (prefs.graphics) {
             GraphicalInterface.main(pidSearch.search);
         } else {
+	   boolean repeat = prefs.repeat;
            do {
             TextInterface.main(pidSearch.search,prefs);
 	    prefs = new SearchPreferences();
 	   }
-           while (prefs.repeat);
+           while (repeat);
         }
     }
 

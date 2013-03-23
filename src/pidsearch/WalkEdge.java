@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /** Class for representing walks between stations.
  * 
- * Attribute {@link pidsearch.Edge#lenght lenght} means distance in meters between
+ * Attribute {@link pidsearch.Edge#length length} means distance in meters between
  * the stations. This is because variable walk speed could be set.
  *
  * @author jethro

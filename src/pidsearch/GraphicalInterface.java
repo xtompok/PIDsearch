@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pidsearch;
 
 import java.awt.Dimension;
@@ -19,6 +15,9 @@ import javax.swing.table.TableModel;
 
 /** Graphical interface for searching a connection.
  *
+ * This class provides graphical user interface to searching connection. It should
+ * called through static method {@link pidsearch.GraphicalInterface#main}. 
+ * 
  * @author jethro
  */
 public class GraphicalInterface extends javax.swing.JFrame {
@@ -26,12 +25,14 @@ public class GraphicalInterface extends javax.swing.JFrame {
     SearchConnection search;
     SearchPreferences prefs;
 
-    /**
+    /** Prepare GUI.
+     * 
+     * This method prepares GUI.
      *
-     * @param s
+     * @param search Initialized SearchConnection object.
      */
-    public GraphicalInterface(SearchConnection s) {
-        search = s;
+    public GraphicalInterface(SearchConnection search) {
+        this.search = search;
         initComponents();
     }
 
@@ -206,7 +207,15 @@ public class GraphicalInterface extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+    /** Perform the search.
+     * 
+     * This method is called, when button "Vyhledat" is pressed. It parses 
+     * texts from the form and checks, if they are valid. If they are, the
+     * connection is searched and it is switched to the pane with results.
+     * If form is not valid, error labels are shown for non-valid data.
+     * 
+     * @param evt ActionEvent
+     */
     private void vyhledatButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vyhledatButActionPerformed
         boolean cancel = false;
         prefs = new SearchPreferences();
@@ -282,11 +291,26 @@ public class GraphicalInterface extends javax.swing.JFrame {
 
     }//GEN-LAST:event_vyhledatButActionPerformed
 
+    /** Table model for results of search.
+     * 
+     * This class implements TableModel interface and prepares table from results
+     * of the search. In first column is name of the line, then starting/transfering/ending
+     * station, arrival time and in the last column is departure time.
+     * 
+     */
     class ResultsTableModel implements TableModel {
 
         String[] colNames = {"Spoj", "Odkud/Kam", "Přj.", "Odj."};
         String[][] table;
 
+	/** Cerate new table model from Arrival.
+	 * 
+	 * This method takes one Arrival object from searching connection and
+	 * creates a TableModel for the found connection represented by that 
+	 * Arrival object.
+	 * 
+	 * @param arrival Last node on found connection.
+	 */
         public ResultsTableModel(Arrival arrival) {
             List<Edge> edges = Utilities.condenseEdges(arrival.asList());
             List<String[]> rows;
@@ -310,7 +334,7 @@ public class GraphicalInterface extends javax.swing.JFrame {
                     arr = (arr==-1)?0:arr;
                     arr += (e.length/prefs.walkSpeed);
                 } else if (e instanceof ConEdge) {
-                    row[0] = ((ConEdge) e).connection.name/*+"("+((ConEdge)e).connection.hashCode()+")"*/;
+                    row[0] = ((ConEdge) e).connection.name;
                     row[3] = Utilities.strTime(((ConEdge) e).departure);
                     arr = ((ConEdge) e).departure + e.length;
                 }
@@ -376,8 +400,12 @@ public class GraphicalInterface extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * @param search the command line arguments
+    /** The main method.
+     * 
+     * This method runs the EventQueue, crates new GraphicalInterface object, 
+     * sets labels, which can't be set in GUI and shows GUI.
+     * 
+     * @param search Initialized {@link pidsearch.SearchConnection} object.
      */
     public static void main(final SearchConnection search) {
 

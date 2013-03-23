@@ -11,7 +11,7 @@ import java.io.Serializable;
  * This class represents connection edges, which is one transfer between two 
  * stations by public transport.
  * 
- * attribute {@link pidsearch.Edge#lenght lenght} means length of transport in 
+ * attribute {@link pidsearch.Edge#length length} means length of transport in 
  * minutes.
  *
  * @author jethro
