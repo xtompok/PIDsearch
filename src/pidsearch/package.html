@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body>
+        <div>Hledání spojení v Pražské Integrované Dopravě</div>
+        Tento vyhledávač slouží ke hledání spojení v systém Pražské integrované dopravy.
+        Má textové i grafické rozhraní, jako zdroj dat využívá datové soubory od CHAPS.
+        <h4>Příprava dat</h4>
+        Před první spuštěním je potřeba z webu CHAPS stáhnout kompletní jízdní řády a mapové podklady a 
+        obojí rozbalit ve stejné složce. Měly by v ní být soubory KOMPLET a KOMPLET_M. Následně je 
+        potřeba spustit skript <pre>./prepare-tt ZDROJ CÍL</pre>, kde ZDROJ je složka obsahující rozbalené 
+        jízdní řády a cíl je složka obsahující soubor PIDsearch.jar. Skript datové soubory převede do formátu čitelného aplikací a vytvoří složku data s připravenými soubory. Následně je možné spustit aplikaci PIDsearch.jar, která při prvním spuštění přečte připravená data a vygeneruje si vlastní soubor PrepareData.obj, ve kterém má vše potřebné pro vyhledávání uložené. Pak je možné celou složku data smazat, již není k běhu potřeba.
+        
+        Při aktualizaci je potřeba smazat soubor PrepareData.obj a následně provést kroky jako při prvním spuštění.
+        <h4>První spuštění</h4>
+        Spusťte soubor PIDsearch.jar z příkazové řádky pomocí java -jar PIDsearch.jar. Program by měl vypsat průběh načítání datových souborů a nakonec by se měl ptát na jméno výchozí stanice. Zadejte výchozí zastávku a potvrďte enterem. Program by se měl zeptat na cílovou stanici. Zadejte cílovou stanici a potvrďte enterem. Poté by mělo být spojení vyhledáno a vypsáno na obrazovku a program by měl skončit. Spojení je hledáno v den a čas zadání dotazu.
+        <h4>Pokročilé možnosti</h4>
+        Kromě výše uvedeného jednoduchého vyhledávání program umožňuje i pokročilé nastavení vyhledávání. Jednou možností je spustit grafické rozhraní a používat ho místo textového. Ke spuštění je potřeba zadat programu paramter -g. Potom jsou všechny ostatní parametry z příkazové řádky ignorovány a spustí se grafické rozhraní.
+        
+        Druhou možností je specifikovat parametry vyhledávání jako paramtery při spuštění programu. To shrnuje následující tabulka.
+
+	  <ul>
+	  <li> 
+	 	<pre> -f ODKUD</pre><br />
+                Jméno výchozí zastávky
+	  </li>
+	  <li> 
+	 	<pre> -t KAM</pre><br />
+                Jméno cílové zastávky
+	  </li>
+	  <li> 
+	 	<pre> -D DD[.MM[.RRRR]]</pre><br />
+                Datum, pro které hledat spojení
+	  </li>
+	  <li> 
+	 	<pre> -d TIMESTAMP</pre><br />
+                Unixová timestamp s datem a časem, pro který hledat spojení.
+	  </li>
+	  <li> 
+	 	<pre> -T HH.MM</pre><br />
+                Čas odjezdu z výchozí stanice
+	  </li><!--
+	  <li> 
+	 	<pre> -q</pre><br />
+                Potlačit některé výpisy na konzoli
+	  </li>!-->	 
+	  <li> 
+	 	<pre> -g</pre><br />
+	 	Vyhledávat spojení v grafickém rozhraní. Ostatní parametry 
+                z příkazové řádky jsou ignorovány.
+	  </li>	 
+	  <li> 
+	 	<pre> -r</pre><br />
+	 	Opakovaně hledat spojení. První spojení vezme parametry z příkazové
+                řádky, další hledání probíhají interaktivně. Program ukončíte 
+                stisknutím Ctrl-C
+	  </li>	 
+<!--	  <li> 
+	 	<pre> -</pre><br />
+	  
+	  </li>-->
+	  
+	  </ul>
+        
+        <h4>Vnitřní reprezentace dat</h4>
+        Data jsou reprezentována ve formě multigrafu. Vrcholy jsou zastávky a hrany jsou přesuny. 
+        Přesuny mohou být dvou typů, MHD a pěší. U pěších je známá vzdálenost a u MHD čas přesunu.
+        Každá zastávka má uložen jízdní řád ve formě odjezdů seřazených podle času od půlnoci a
+        seznam pěších přesunů. Hrany si pamatují, ke kterému spojení patří. Spojení je cesta jednoho
+        dopravního prostředku z konečné na druhou konečnou.
+        
+        <h4>Algoritmus vyhledávání</h4>
+        Po zadání zastávek najde program zastávky daného jména a spustí vyhledávání. To probíhá tak, 
+        že nejprve jsou nalezeny všechny pěší přesuny do zastávky stejného jména, protože není ze
+        zadání jasné, kterou si uživatel vybral. Pak vždy z dosažených stanic najde návazné pěší přesuny
+        spoje MHD, které odjíždějí do nějakého času po příjezdu do dané zastávky a uloží si je do fronty
+        seřazené podle času odjezdu. Poté z této fronty odebere nejbližší odjezd a přidá si do množiny
+        dosažených zastávek tuto zastávku. Opět prozkoumá odjezdy a toto opakuje tak dlouho, než nalezne
+        zastávku se shodným jménem jao cílová. Protože vždy zpracovává zastávku, kterou dosáhl nejdříve, 
+        je nalezené spojení optimální.
+        
+        <h4> Známé chyby</h4>
+         <ul>
+             <li>Střídání linek po zastávce. Toto je částečně problém jízdních řádů, respektive jejich
+                 zpracování, které jsem neprogramoval a příliš mu nerozumím. Druhý problém je, že pokud
+                 mají linky stejný čas odjezdu ze zastávky a stejný směr, tak algoritmus může střídavě
+                 vybírat jednu a druhou a tím tvořit nesmyslné spojení.
+             </li>
+             <li>
+                 Program nezná pěší přesuny. V současné době jsou pěší přesuny zadané pouze přestupními
+                 stanicemi metra a jejich povrchovými ekvivalenty. Dále se generují automaticky přesuny
+                 mezi zastávkami stejného jména. Další přesuny by bylo potřeba přidávat ručně, protože
+                 někde je 200m vzduchem i 200m po chodníku a někde je 100m vzduchem 500m po chodníku,
+                 tudíž by výsledky byly ještě méně věrohodné. V budoucnosti se předpokládá použití OSM
+                 ke zjišťování skutečných vzdáleností.
+             </li>
+             <li>Pomalé načítání. Načítání již nelze příliš urychlit při zachování stávající struktury
+                 ukládání dat. Do budoucna je nápad na zlepšení.</li>
+             <li>Velká spotřeba paměti. Program je určen pro současné stroje, kde by 500MB nemělo dělat
+                 problém. Ke zmenšení spotřeby paměti by bylo nutné nenačítat si celý jízdní řád do paměti,
+                 což by znamenalo přepsání programu od začátku. 
+             </li>
+         </ul>
+    </body>
+</html>
