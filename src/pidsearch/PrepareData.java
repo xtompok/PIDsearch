@@ -1,5 +1,6 @@
 package pidsearch;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.Externalizable;
 import java.io.FileNotFoundException;
@@ -8,6 +9,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,19 +33,25 @@ public class PrepareData implements Externalizable {
 	/** 
 	 * Version if data for serialization.
 	 */
-	public static final long serialVersionUID = 14;
+	public static final long serialVersionUID = 26;
 	/**
 	 * Directory containing files for generation the graph.
 	 */
-	public static String dataDir = "data";
+	public static String dataDir = "/home/jethro/Programy/idos-decrypt/GTFS/output";
 	/**
 	 * Filename of file containing stations definitions.
 	 */
-	public static String stationsFile = "stations.dat";
+	public static String stationsFile = "stops.txt";
 	/**
 	 * Filename of file containing map positions of stations.
 	 */
-	public static String mapfile = "map.dat";
+	public static String conFile = "routes.txt";
+        
+        public static String validityFile = "calendar_dates.txt";
+        
+        public static String ttFile = "stop_times.txt";
+        
+        public static String tripsFile = "trips.txt";
 	/**
 	 * Filename of file containing decoded timetables.
 	 */
@@ -67,6 +76,10 @@ public class PrepareData implements Externalizable {
 	 * Array of walks.
 	 */
 	public WalkEdge[] walks;
+        
+        
+        //HACK
+        private Map<String,Vertex> idToStation;
 
 	/**
 	 * Create an empty PrepareData object.
@@ -85,13 +98,26 @@ public class PrepareData implements Externalizable {
 	 */
 	public void makeData() {
 
-		Map map;
-		List stat;
 		List<Vertex> verticesList;
 		List<Connection> connectionsList;
 		List<ConEdge> edgesList;
 		List<WalkEdge> walksList;
-		map = loadMap(dataDir + "/" + mapfile);
+                Map<String,boolean []> validity;
+                verticesList = loadGTFSStations(dataDir+"/"+stationsFile);
+                System.out.println("Stations loaded");
+                validity = loadGTFSValidity(dataDir+"/"+validityFile,dataDir+"/"+tripsFile);
+                System.out.println("Validity loaded");
+                connectionsList = loadGTFSConnections(dataDir+"/"+conFile,validity);
+                System.out.println("Connections loaded");
+                edgesList = loadGTFSTimeTable(dataDir+"/"+ttFile, verticesList, connectionsList);
+                System.out.println("Timetable loaded");
+                walksList = new LinkedList<WalkEdge>();
+                for (Vertex v: verticesList){
+                    DepartComparator dc;
+                    dc = new DepartComparator();
+                    Collections.sort(v.departs,dc);
+                }
+                /*map = loadMap(dataDir + "/" + mapfile);
 		System.out.println("Map loaded");
 
 		stat = loadStations(dataDir + "/" + stationsFile);
@@ -108,7 +134,7 @@ public class PrepareData implements Externalizable {
 		timeTable = loadTimeTable(dataDir + "/" + decttFile, verticesList);
 		connectionsList = (List<Connection>) timeTable.get(0);
 		edgesList = (List<ConEdge>) timeTable.get(1);
-
+*/
 		System.out.print("Timetable loaded, ");
 		System.out.print(connectionsList.size() + " connections, ");
 		System.out.println(edgesList.size() + " edges");
@@ -121,7 +147,7 @@ public class PrepareData implements Externalizable {
 		edges = edgesList.toArray(edges);
 		walks = new WalkEdge[walksList.size()];
 		walks = walksList.toArray(walks);
-
+                 
 	}
 
 	/**
@@ -189,104 +215,123 @@ public class PrepareData implements Externalizable {
 	 * @return Map, where key is an mapId of station and value is array of [x,y]
 	 * coordinates of station in S-42.
 	 */
-	private Map<Integer, int[]> loadMap(String mapFile) {
-		Map<Integer, int[]> records;
-		records = new HashMap();
-
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(mapFile));
-		} catch (FileNotFoundException ex) {
-			System.err.println("Map file doesn't exist");
-			return null;
-		}
-		String line;
-		try {
-			while ((line = reader.readLine()) != null) {
-				String[] cols;
-				cols = line.split(" ");
-				int coord[];
-				coord = new int[2];
-				coord[0] = Integer.parseInt(cols[0]);
-				coord[1] = Integer.parseInt(cols[1]);
-				int id = Integer.parseInt(cols[2]);
-				records.put(id, coord);
-			}
-		} catch (IOException e) {
-			System.err.println("Error while reading map file");
-		}
-
-		return records;
-	}
-
-	/** Load stations from file.
-	 * 
-	 * This method loads stations from given file. Format of the file is a 
-	 * space separated values, where in first column is an mapID of the station
-	 * and sixth is the name of the station. Other columns were not decoded yet.
-	 * 
-	 * @param stationsFile Path to the file with stations.
-	 * @return List of List, where inner List represents one station. First
-	 * member of the inner List is station's name and second is its mapID.
-	 */
-	private List<List> loadStations(String stationsFile) {
-		List stations;
-		stations = new LinkedList();
-
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(stationsFile));
-		} catch (FileNotFoundException ex) {
-			System.err.println("Stations file doesn't exist");
-			return null;
-		}
-
-		String line;
-		try {
-			while ((line = reader.readLine()) != null) {
-				String cols[];
-				cols = line.split(" ", 6);
-				int mapID = Integer.parseInt(cols[0]);
-				String name = cols[5];
-				List s;
-				s = new LinkedList();
-				s.add(name);
-				s.add(mapID);
-				stations.add(s);
-			}
-		} catch (IOException e) {
-			System.err.println("Error while reading stations file");
-		}
-		return stations;
-	}
-
-	/** Make from list of stations and map vertices.
-	 * This method "merges" information from map file and from stations file
-	 * and makes a vertices from them.
-	 * 
-	 * @param stat Output of {@link pidsearch.PrepareData#loadStations loadStations}
-	 * @param map Output of {@link pidsearch.PrepareData#loadMap loadMap}
-	 * @return List of vertices.
-	 */ 
-	private List<Vertex> makeVertices(List<List> stat, Map<Integer, int[]> map) {
-		List<Vertex> stations;
-		stations = new ArrayList();
-		for (List s : (List<List>) stat) {
-			Vertex v;
-			v = new Vertex();
-			v.name = (String) s.get(0);
-			int[] coord = map.get((Integer) s.get(1));
-			if (coord == null) {
-				System.err.println("No map position for " + v.name);
-			} else {
-				v.xCoord = coord[0];
-				v.yCoord = coord[1];
-			}
-			stations.add(v);
-		}
-		return stations;
-	}
-
+        
+        private int YmdToDays(String str){
+            String year = str.substring(0,4);
+            String month = str.substring(4,6);
+            String day = str.substring(6,8);
+            Calendar cal;
+            cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, Integer.parseInt(year));
+            cal.set(Calendar.MONTH, Integer.parseInt(month));
+            cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
+            return cal.get(Calendar.DAY_OF_YEAR);
+        }
+        
+        private Map<String, boolean[]> loadGTFSValidity(String validityFile, String tripsFile){
+            CSVReader reader;
+            try{
+                reader = new CSVReader(new BufferedReader(new FileReader(validityFile)));
+            } catch (FileNotFoundException ex){
+                System.err.println("GTFS validity file doesn't exist");
+                return null;
+            }
+           
+            Map<Integer, boolean []> calValidity;
+            calValidity = new HashMap<Integer, boolean[]>();
+            try {
+                String [] colhead = reader.readNext();
+                Map<String,Integer> colMap  = new HashMap<String, Integer>();
+                for (int i=0;i<colhead.length;i++){
+                    colMap.put(colhead[i], i);
+                }
+                String [] nextLine;
+                while ((nextLine = reader.readNext())!=null){
+                    int id = Integer.parseInt(nextLine[colMap.get("service_id")]);
+                    int bit = YmdToDays(nextLine[colMap.get("date")]);
+                    boolean state = (nextLine[colMap.get("exception_type")].equals("1"));
+                    
+                    boolean [] val;
+                    if (calValidity.containsKey(id)){
+                        val = calValidity.get(id);
+                    }else{
+                        val = new boolean[375];
+                    }
+                    val[bit]=state;
+                    calValidity.put(id, val);
+                }
+            } catch (IOException ex) {
+                System.err.println("Error occured while reading validity file");
+                return null;
+            }
+            
+            
+            try{
+                reader = new CSVReader(new BufferedReader(new FileReader(tripsFile)));
+            } catch (FileNotFoundException ex){
+                System.err.println("GTFS trips file doesn't exist");
+                return null;
+            }
+           
+            Map<String, boolean []> validity;
+            validity = new HashMap<String, boolean[]>();
+            try {
+                String [] colhead = reader.readNext();
+                Map<String,Integer> colMap  = new HashMap<String, Integer>();
+                for (int i=0;i<colhead.length;i++){
+                    colMap.put(colhead[i], i);
+                }
+                String [] nextLine;
+                while ((nextLine = reader.readNext())!=null){
+                    validity.put(nextLine[colMap.get("route_id")],
+                            calValidity.get(Integer.parseInt(nextLine[colMap.get("service_id")])));
+       
+                }
+            } catch (IOException ex) {
+                System.err.println("Error occured while reading trips file");
+                return null;
+            }
+            
+            return validity;  
+            
+        }
+        
+        private List<Vertex> loadGTFSStations(String statFile){
+            CSVReader reader;
+            try{
+                reader = new CSVReader(new BufferedReader(new FileReader(statFile)));
+            } catch (FileNotFoundException ex){
+                System.err.println("GTFS stations file doesn't exist");
+                return null;
+            }
+            
+            idToStation = new HashMap<String, Vertex>();
+            List<Vertex> stations;
+            stations = new LinkedList<Vertex>();
+            try {
+                String [] colhead = reader.readNext();
+                Map<String,Integer> colMap  = new HashMap<String, Integer>();
+                for (int i=0;i<colhead.length;i++){
+                    colMap.put(colhead[i], i);
+                }
+                String [] nextLine;
+                while ((nextLine = reader.readNext())!=null){
+                    Vertex v = new Vertex();
+                    v.departs = new LinkedList<ConEdge>();
+                    v.walks = new LinkedList<WalkEdge>();
+                    v.name = nextLine[colMap.get("stop_name")];
+                 //   v.xCoord = Integer.parseInt(nextLine[colMap.get("stop_lat")]);
+                 //   v.yCoord = Integer.parseInt(nextLine[colMap.get("stop_len")]);
+                    idToStation.put(nextLine[colMap.get("stop_id")], v);
+                    stations.add(v);
+                }
+            } catch (IOException ex) {
+                System.err.println("Error occured while reading stations file");
+                return null;
+            }
+            return stations;
+        }
+       
 	/** Load walks from file.
 	 * 
 	 * This method loads user-defined wlaks from given file. 
@@ -433,99 +478,100 @@ public class PrepareData implements Externalizable {
 		return (int) (Math.sqrt((v2.xCoord - v1.xCoord) * (v2.xCoord - v1.xCoord)
 			+ (v2.yCoord - v1.yCoord) * (v2.yCoord - v1.yCoord)));
 	}
-
-	/** Loads timetable from file.
-	 * 
-	 * This method loads timetable data from given file. Format of the file
-	 * is quite weird, for understanding, look on the timetable file and on 
-	 * the source code of this method.
-	 *
-	 * @param ttFile Path of file containing timetable.
-	 * @param vertices List of all vertices.
-	 * @return List with two items, first is list of Connections and second
-	 * is list of ConEdges from timetable.
-	 */
-	public List loadTimeTable(String ttFile, List<Vertex> vertices) {
-		List<ConEdge> edges;
-		List<Connection> connections;
-		edges = new ArrayList<ConEdge>();
-		connections = new ArrayList<Connection>();
-
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(ttFile));
-		} catch (FileNotFoundException ex) {
-			System.err.println("Timetable file doesn't exist");
-			return null;
-		}
-
-		String line;
-		Connection con;
-		con = null;
-
-		int memStat;
-		int memTime;
-		memStat = -1;
-		memTime = -1;
-
-		try {
-			while ((line = reader.readLine()) != null) {
-				if (line.length() == 0) {
-					continue;
-				}
-				if (line.charAt(0) == ';') {
-					continue;
-				}
-				if (line.charAt(0) == '#') {
-					String lineName;
-					lineName = line.split(" ")[1];
-					con = new Connection();
-					connections.add(con);
-					con.name = lineName;
-					memStat = -1;
-					memTime = -1;
-				}
-				if (line.charAt(0) == 'D') {
-					con.genValidityBitmap(line.substring(2));
-				}
-				if (line.charAt(0) == '\t') {
-					String[] cols;
-					cols = line.split("\t");
-					int time = (Integer.parseInt(cols[1])) % (24 * 60);
-					int stat = Integer.parseInt(cols[3]);
-					if ((memStat != -1) && (memTime != -1)) {
-						ConEdge e;
-						e = new ConEdge();
-						e.connection = con;
-						e.departure = memTime;
-						e.length = time - memTime;
-						e.from = vertices.get(memStat);
-						e.to = vertices.get(stat);
-						edges.add(e);
-						vertices.get(memStat).departs.add(e);
-
-					}
-					memStat = stat;
-					memTime = time;
-				}
-			}
-		} catch (IOException e) {
-			System.err.println("Error while reading timetable file");
-		}
-
-		DepartComparator depComp;
-		depComp = new DepartComparator();
-
-		for (Vertex v : vertices) {
-			Collections.sort(v.departs, depComp);
-		}
-
-		List timeTable;
-		timeTable = new LinkedList();
-		timeTable.add(connections);
-		timeTable.add(edges);
-		return timeTable;
-	}
+        
+        
+        public List<Connection> loadGTFSConnections(String conFile, Map<String,boolean []> validity){
+            CSVReader reader;
+            try{
+                reader = new CSVReader(new BufferedReader(new FileReader(conFile)));
+            } catch (FileNotFoundException ex){
+                System.err.println("GTFS connections file doesn't exist");
+                return null;
+            }
+           
+            List<Connection> connections;
+            connections = new LinkedList<Connection>();
+            try {
+                String [] colhead = reader.readNext();
+                Map<String,Integer> colMap  = new HashMap<String, Integer>();
+                for (int i=0;i<colhead.length;i++){
+                    colMap.put(colhead[i], i);
+                }
+                String [] nextLine;
+                while ((nextLine = reader.readNext())!=null){
+                    Connection c = new Connection();
+                    c.company = nextLine[colMap.get("agency_id")];
+                    c.name = nextLine[colMap.get("route_short_name")]+" "+
+                            nextLine[colMap.get("route_long_name")];
+                    c.type = TransportType.TRAIN;
+                    c.validity = validity.get(nextLine[colMap.get("route_id")]);
+                    connections.add(c);
+                }
+            } catch (IOException ex) {
+                System.err.println("Error occured while reading stations file");
+                return null;
+            }
+            
+            return connections;           
+        }
+        
+        private int timeToInt(String time){
+            String [] timeParts = time.split(":");
+            return Integer.parseInt(timeParts[0])*60+Integer.parseInt(timeParts[1]);
+        }
+        
+        public List<ConEdge> loadGTFSTimeTable(String ttFile,List<Vertex> vertices, List<Connection> connections){
+        CSVReader reader;
+            try{
+                reader = new CSVReader(new BufferedReader(new FileReader(ttFile)));
+            } catch (FileNotFoundException ex){
+                System.err.println("GTFS timetable file doesn't exist");
+                return null;
+            }
+           
+            List<ConEdge> edges;
+            edges = new LinkedList<ConEdge>();
+            try {
+                String [] colhead = reader.readNext();
+                Map<String,Integer> colMap  = new HashMap<String, Integer>();
+                for (int i=0;i<colhead.length;i++){
+                    colMap.put(colhead[i], i);
+                }
+                String [] line;
+                line = reader.readNext();
+                String [] nextLine;
+                nextLine = reader.readNext();
+                while (nextLine!=null){
+                    if (!nextLine[colMap.get("trip_id")].equals(line[colMap.get("trip_id")]))
+                    {
+                        line = nextLine;
+                        nextLine = reader.readNext();
+                        continue;
+                    }
+                    ConEdge e = new ConEdge();
+                    e.connection = connections.get(Integer.parseInt(
+                            nextLine[colMap.get("trip_id")]));
+                    e.departure = timeToInt(line[colMap.get("departure_time")]);
+                    int arrival = timeToInt(nextLine[colMap.get("arrival_time")]);
+                    e.length = arrival-e.departure;
+                    e.from = idToStation.get(line[colMap.get("stop_id")]);
+                    e.to = idToStation.get(nextLine[colMap.get("stop_id")]);
+                    e.type = TransportType.TRAIN;
+                    
+                    int index = vertices.indexOf(e.from);
+                    vertices.get(index).departs.add(e);
+                    edges.add(e);
+               
+                    line = nextLine;
+                    nextLine = reader.readNext();
+                }
+            } catch (IOException ex) {
+                System.err.println("Error occured while reading stations file");
+                return null;
+            }
+            
+            return edges;  
+        }
 
 	/** Custom serializer.
 	 * 

@@ -107,6 +107,12 @@ public class SearchConnection {
             if (first == null) {
                 return null;
             }
+            if (first.edge.to.name.equals(to.name)){
+                found=true;
+                stubs.add(first);
+            }
+            
+            
 
             departs = findDepartures(first.edge.to, first.arrival, when, wait);
 
