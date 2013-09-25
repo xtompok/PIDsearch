@@ -263,7 +263,7 @@ public class Utilities {
                 }
 
                 ce.to = ((ConEdge) e).to;
-                ce.length += e.length;
+                ce.length = (((ConEdge) e).departure - ce.departure)+e.length;
             }
         }
         if ((we != null) && (!we.from.name.equals(we.to.name))) {
