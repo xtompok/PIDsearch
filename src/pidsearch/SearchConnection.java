@@ -181,12 +181,24 @@ public class SearchConnection {
         int minIndex;
         whenEdge.departure = minute;
         minIndex = Collections.binarySearch(departs, whenEdge, dc);
-        minIndex = (minIndex < 0) ? -(minIndex + 1) : minIndex;
+        if (minIndex<0){
+            minIndex = -(minIndex+1);
+        }else {
+            while ((departs.get(minIndex).departure==minute)&&(minIndex>0))
+                minIndex--;
+            minIndex++;
+        }
 
         int maxIndex;
         whenEdge.departure = minute + range;
         maxIndex = Collections.binarySearch(departs, whenEdge, dc);
-        maxIndex = (maxIndex < 0) ? -(maxIndex + 1) : maxIndex;
+        if (maxIndex < 0){
+            maxIndex = -(maxIndex+1);
+        }else {
+            while ((maxIndex<(departs.size()-1))&&(departs.get(maxIndex).departure)==minute+range)
+                maxIndex++;
+            maxIndex--;
+        }
 
         List<ConEdge> departEdges;
         departEdges = new LinkedList<ConEdge>();
