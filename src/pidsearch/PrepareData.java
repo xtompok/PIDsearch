@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class PrepareData implements Externalizable {
 	/** 
 	 * Version if data for serialization.
 	 */
-	public static final long serialVersionUID = 26;
+	public static final long serialVersionUID = 22;
 	/**
 	 * Directory containing files for generation the graph.
 	 */
@@ -112,10 +113,14 @@ public class PrepareData implements Externalizable {
                 edgesList = loadGTFSTimeTable(dataDir+"/"+ttFile, verticesList, connectionsList);
                 System.out.println("Timetable loaded");
                 walksList = new LinkedList<WalkEdge>();
-                for (Vertex v: verticesList){
-                    DepartComparator dc;
-                    dc = new DepartComparator();
+                DepartComparator dc;
+                dc = new DepartComparator();
+                for (int i=0;i<verticesList.size();i++)
+                {
+                    Vertex v;
+                    v = verticesList.get(i);
                     Collections.sort(v.departs,dc);
+                    verticesList.set(i, v);
                 }
                 /*map = loadMap(dataDir + "/" + mapfile);
 		System.out.println("Map loaded");
@@ -188,9 +193,9 @@ public class PrepareData implements Externalizable {
 			s = new Station();
 			s.id = i;
 			s.name = v.name;
-			s.lines = new HashSet<String>();
+			s.lines = new LinkedHashSet<String>();
 			for (ConEdge e : v.departs) {
-				s.lines.add(e.connection.name);
+				s.lines.add(e.departure+" "+e.connection.name);
 			}
 			System.out.println(s.toString());
 		}
@@ -201,6 +206,27 @@ public class PrepareData implements Externalizable {
 			System.out.println(" " + w.length);
 
 		}
+                
+                Map<Connection,List<ConEdge>> consMap;
+                consMap = new HashMap<Connection, List<ConEdge>>();
+                for (Connection c:pd.connections){
+                    consMap.put(c, new LinkedList<ConEdge>());
+                }
+                for (ConEdge e: pd.edges){
+                    consMap.get(e.connection).add(e);
+                }
+                DepartComparator dc;
+                dc = new DepartComparator();
+                for (Connection c: consMap.keySet()){
+                    List<ConEdge> edges;
+                    edges = consMap.get(c);
+                    Collections.sort(edges,dc);
+                    ConEdge first = edges.get(0);
+                    ConEdge last = edges.get(edges.size()-1);
+                    System.out.println(c.name+" "+
+                            first.from.name+"("+first.departure+") -> "+
+                            last.to.name+"("+(last.departure+last.length)+")");
+                }
 
 	}
 
@@ -222,8 +248,11 @@ public class PrepareData implements Externalizable {
             String day = str.substring(6,8);
             Calendar cal;
             cal = Calendar.getInstance();
+            int curYear = cal.get(Calendar.YEAR);
+            if (curYear!=Integer.parseInt(year))
+                return 374; // HACK
             cal.set(Calendar.YEAR, Integer.parseInt(year));
-            cal.set(Calendar.MONTH, Integer.parseInt(month));
+            cal.set(Calendar.MONTH, Integer.parseInt(month)-1);
             cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
             return cal.get(Calendar.DAY_OF_YEAR);
         }
@@ -554,6 +583,8 @@ public class PrepareData implements Externalizable {
                     e.departure = timeToInt(line[colMap.get("departure_time")]);
                     int arrival = timeToInt(nextLine[colMap.get("arrival_time")]);
                     e.length = arrival-e.departure;
+                    if (e.length<=0)
+                        System.out.println("Timetravel detected!"+e.connection.name);
                     e.from = idToStation.get(line[colMap.get("stop_id")]);
                     e.to = idToStation.get(nextLine[colMap.get("stop_id")]);
                     e.type = TransportType.TRAIN;

@@ -81,6 +81,7 @@ public class SearchConnection {
             Arrival a;
             a = new Arrival(e);
             if (!stubs.contains(a)) {
+                System.err.println("At "+e.from.name+", adding "+e.connection.name);
                 stubs.add(a);
             }
         }
@@ -107,12 +108,19 @@ public class SearchConnection {
             if (first == null) {
                 return null;
             }
+            
+            if (usedVertex.get(first.edge.to))
+                continue;
+            
+            System.err.println(first.arrival+
+                    " "+((ConEdge)first.edge).connection.name+
+                    " from "+first.edge.from.name+
+                    " to "+first.edge.to.name);
             if (first.edge.to.name.equals(to.name)){
                 found=true;
                 stubs.add(first);
             }
-            
-            
+         
 
             departs = findDepartures(first.edge.to, first.arrival, when, wait);
 
@@ -127,7 +135,6 @@ public class SearchConnection {
                     if (!stubs.contains(a)) {
                         stubs.add(a);
                     }
-                    usedVertex.put(e.to, Boolean.TRUE);
                 }   
 
             }
@@ -142,9 +149,10 @@ public class SearchConnection {
                     if (!stubs.contains(a)) {
                         stubs.add(a);
                     }
-                    usedVertex.put(e.to, Boolean.TRUE);
                 }
             }
+            usedVertex.put(first.edge.to, Boolean.TRUE);
+
         }
 
         return toFound(stubs, to);

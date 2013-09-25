@@ -18,7 +18,7 @@ public class DepartComparator implements Comparator<ConEdge>{
       * 
       * This method should be used for comaring and sorting ConEdges according to
       * the time of departure. If used as comparator for sort, it sorts ConEdges
-      * chronologicaly by departure from midnight.:w
+      * chronologicaly by departure from midnight.
       *
       * @param e1 First edge.
       * @param e2 Second Edge
